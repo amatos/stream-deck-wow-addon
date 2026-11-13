@@ -1,7 +1,7 @@
 ## Interface: 16001
 ## Title: Stream Deck Bars
 ## Notes: Mirrors action bars 1-5 to an Elgato Stream Deck via an on-screen data strip.
-## Version: 0.1.0
+## Version: 0.2.0
 ## Author: Alberth Matos
 ## X-Copyright: Copyright (c) 2026 Alberth Matos
 ## X-License: BSD-2-Clause

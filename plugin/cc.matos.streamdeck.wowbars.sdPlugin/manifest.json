@@ -1,7 +1,7 @@
 {
 	"$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
 	"Name": "WoW Bars",
-	"Version": "0.1.0.0",
+	"Version": "0.2.0.0",
 	"Author": "alberth",
 	"Description": "Mirrors World of Warcraft action bars on Stream Deck keys and presses them in game. Requires the WoW Bars Helper app and the StreamDeckBars addon.",
 	"UUID": "cc.matos.streamdeck.wowbars",

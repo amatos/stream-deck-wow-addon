@@ -271,10 +271,10 @@ Any change to the strip layout must update [docs/strip-format.md](docs/strip-for
 
 ## Windows port (`windows-helper` branch)
 
-The [`windows-helper`](../../tree/windows-helper) branch ports the macOS helper app to Windows 11. It also changes the addon where the port needs it, for example keybinds that work with the Windows client. [`the-plan.md`](../../blob/windows-helper/the-plan.md) on that branch describes the approach.
+The `windows-helper` branch ports the macOS helper app to Windows 11. It also changes the addon where the port needs it, for example keybinds that work with the Windows client. [`the-plan.md`](the-plan.md) on that branch describes the approach.
 
 > [!WARNING]
-> The Windows port is a **work in progress** and of **alpha quality**. It's a lower priority than `main` and will likely lag behind it. Use `main` for the supported macOS version.
+> The Windows port is a **work in progress** and of **alpha quality**. It's a lower priority than `main` and will likely lag behind it.
 
 ## License
 
