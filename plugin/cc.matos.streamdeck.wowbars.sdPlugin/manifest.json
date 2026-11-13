@@ -1,0 +1,43 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+	"Name": "WoW Bars",
+	"Version": "0.1.0.0",
+	"Author": "alberth",
+	"Description": "Mirrors World of Warcraft action bars on Stream Deck keys and presses them in game. Requires the WoW Bars Helper app and the StreamDeckBars addon.",
+	"UUID": "cc.matos.streamdeck.wowbars",
+	"Category": "WoW Bars",
+	"CategoryIcon": "imgs/category",
+	"Icon": "imgs/plugin",
+	"CodePath": "bin/plugin.js",
+	"SDKVersion": 3,
+	"Software": {
+		"MinimumVersion": "7.1"
+	},
+	"OS": [
+		{
+			"Platform": "mac",
+			"MinimumVersion": "15"
+		}
+	],
+	"Nodejs": {
+		"Version": "24"
+	},
+	"Actions": [
+		{
+			"Name": "WoW Slot",
+			"UUID": "cc.matos.streamdeck.wowbars.slot",
+			"Icon": "imgs/action",
+			"Tooltip": "Shows one action-bar button and presses it in World of Warcraft.",
+			"PropertyInspectorPath": "ui/slot.html",
+			"Controllers": ["Keypad"],
+			"UserTitleEnabled": false,
+			"SupportedInMultiActions": false,
+			"States": [
+				{
+					"Image": "imgs/key",
+					"ShowTitle": false
+				}
+			]
+		}
+	]
+}

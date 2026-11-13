@@ -37,7 +37,31 @@
     {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
     {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
     {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
-    {"icon": 1, "hasAction": true, "usable": true, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": true}
+    {"icon": 1, "hasAction": true, "usable": true, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": true},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 136048, "hasAction": true, "usable": false, "noMana": false, "glow": true, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 0, "hasAction": false, "usable": false, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": false},
+    {"icon": 132794, "hasAction": true, "usable": true, "noMana": false, "glow": false, "rangeApplies": false, "inRange": false, "hasCount": true}
   ],
-  "symbols": [51, 12, 15, 60, 0, 21, 42, 63, 1, 46, 57, 11, 0, 33, 13, 48, 51, 0, 0, 32, 58, 46, 48, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 10, 12, 44, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63, 63, 63, 63, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 48, 32, 46, 30]
+  "symbols": [51, 12, 15, 60, 0, 21, 42, 63, 3, 46, 57, 11, 0, 33, 13, 48, 51, 0, 0, 32, 58, 46, 48, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 10, 12, 44, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 63, 63, 63, 63, 34, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 48, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 33, 13, 48, 36, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 26, 58, 48, 32, 54, 13]
 }

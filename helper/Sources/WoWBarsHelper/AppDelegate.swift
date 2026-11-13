@@ -1,4 +1,5 @@
 import AppKit
+import DeckKit
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -15,6 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         apply(model.presentation)
 
         model.startIcons()
+        model.startDeck()
         capture.onUpdate = { [weak self] in self?.model.snapshot = $0 }
         capture.start()
         model.startPolling { [weak self] in self?.capture.refresh() }
@@ -70,13 +72,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func makeStatusItem() -> NSStatusItem {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        item.button?.image = NSImage(systemSymbolName: "square.grid.3x3.fill", accessibilityDescription: Self.appName)
+        item.button?.image = Self.menuBarImage()
         let menu = NSMenu()
         menu.addItem(withTitle: "Open \(Self.appName)", action: #selector(showWindow), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(withTitle: "Quit \(Self.appName)", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         item.menu = menu
         return item
+    }
+
+    /// The W-on-keys mark as a template image, so macOS tints it for light and dark menu bars.
+    static func menuBarImage() -> NSImage {
+        let image = NSImage(size: NSSize(width: 22, height: 18), flipped: false) { rect in
+            guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
+            Emblem.drawMono(in: ctx, rect: rect.insetBy(dx: 1, dy: 0),
+                            colour: CGColor(gray: 0, alpha: 1), gap: 1)
+            return true
+        }
+        image.isTemplate = true
+        image.accessibilityDescription = appName
+        return image
     }
 
     private func makeMainMenu() -> NSMenu {

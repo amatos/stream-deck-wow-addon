@@ -1,4 +1,6 @@
-# Strip Format — version 1
+# Strip Format — version 3
+
+Version 3 mirrors bars 1–5: 60 slot records (version 1 had 36), so the grid is 8 rows tall and the count area sits below it.
 
 Single source of truth for how the addon encodes action-bar state on screen and how the helper decodes it. The addon, helper and their tests all follow this document. Any change to the layout bumps the version.
 
@@ -39,17 +41,17 @@ Symbols 4–7, fixed greys at levels 0, 1, 2, 3 (`(0,0,0)`, `(1,1,1)`, `(2,2,2)`
 
 ## 4. Symbol sequence
 
-`N` = 230 symbols.
+`N` = 374 symbols (8 grid rows).
 
 | Index | Count | Field |
 |---|---|---|
 | 0–3 | 4 | Marker (§3.1) |
 | 4–7 | 4 | Calibration (§3.2) |
-| 8 | 1 | Format version = `1` |
+| 8 | 1 | Format version = `3` |
 | 9–10 | 2 | Sequence number, 12 bits, big-endian (symbol 9 = high 6 bits). Increments on every redraw, wraps at 4096. |
 | 11 | 1 | Global flags (§4.1) |
-| 12–227 | 216 | 36 slot records × 6 symbols (§5) |
-| 228–229 | 2 | Checksum (§6) |
+| 12–371 | 360 | 60 slot records × 6 symbols (§5) |
+| 372–373 | 2 | Checksum (§6) |
 
 ### 4.1 Global flags (symbol 11)
 
@@ -70,6 +72,8 @@ Symbols 4–7, fixed greys at levels 0, 1, 2, 3 (`(0,0,0)`, `(1,1,1)`, `(2,2,2)`
 | 0–11 | Bar 1 (main) | 1–12, paged | `ActionButton1`–`12` | `BT4Button1`–`12` |
 | 12–23 | Bar 2 | 61–72 | `MultiBarBottomLeftButton1`–`12` | `BT4Button61`–`72` |
 | 24–35 | Bar 3 | 49–60 | `MultiBarBottomRightButton1`–`12` | `BT4Button49`–`60` |
+| 36–47 | Bar 4 | 25–36 | `MultiBarRightButton1`–`12` | `BT4Button25`–`36` |
+| 48–59 | Bar 5 | 37–48 | `MultiBarLeftButton1`–`12` | `BT4Button37`–`48` |
 
 Bar numbers are as Blizzard's Edit Mode and Bartender4's WoW 10 layout label them. (Bartender4 stores bars 2 and 3 internally as bars 6 and 5, which is why its buttons are numbered from 61 and 49.)
 
@@ -93,12 +97,12 @@ Each slot always describes the action currently on that button, so bar 1 follows
 
 ## 6. Checksum
 
-Fletcher-style over symbols 8–227 (version through the last slot record), each symbol `s` in 0–63:
+Fletcher-style over symbols 8–371 (version through the last slot record), each symbol `s` in 0–63:
 
 ```
 a = 0; b = 0
 for each s: a = (a + s) mod 64; b = (b + a) mod 64
-symbol 228 = a, symbol 229 = b
+symbol 372 = a, symbol 373 = b
 ```
 
 The decoder discards any frame whose checksum does not match (for example a frame captured mid-redraw) and keeps the last good state.
@@ -123,7 +127,7 @@ Counts can be secret in combat, so they are drawn as text rather than encoded.
 
 The addon applies these as priority override bindings. The helper sends the same keys.
 
-- **Blizzard bars:** bound to WoW's own action-bar commands (`ACTIONBUTTON1`–`12`, `MULTIACTIONBAR1BUTTON1`–`12`, `MULTIACTIONBAR2BUTTON1`–`12`), so bar 1 follows paging exactly as the default keys do.
+- **Blizzard bars:** bound to WoW's own action-bar commands (`ACTIONBUTTON1`–`12`, `MULTIACTIONBAR1BUTTON1`–`12`, `MULTIACTIONBAR2BUTTON1`–`12`, `MULTIACTIONBAR3BUTTON1`–`12`, `MULTIACTIONBAR4BUTTON1`–`12`), so bar 1 follows paging exactly as the default keys do.
 - **Bartender4:** bound as clicks on the `BT4Button`s in §5.1 with LibActionButton's `Keybind` button, the same way Bartender4 binds its own keys.
 
 `ALT` is never used: it is WoW's default self-cast modifier, so holding it would self-cast friendly spells. Macros that test `[mod:ctrl]` or `[mod:shift]` will see the modifier held.
@@ -148,6 +152,10 @@ The addon applies these as priority override bindings. The helper sends the same
 | 1 | `CTRL-SHIFT-` | Control + Shift |
 | 2 | `CTRL-` | Control |
 | 3 | `SHIFT-` | Shift |
+| 4 | none | none |
+| 5 | `META-` | Command |
+
+Bar 4 uses the bare keypad keys: the user has no physical keypad, so they cannot be pressed by accident. Bar 5 uses Command, the only modifier left that WoW does not use for self-cast or other modified clicks.
 
 Verified in game: WoW on macOS maps `CTRL` to the Control key. The helper sends each key as modifier-down, key-down, key-up, modifier-up events posted directly to the WoW process, with the numeric-pad flag set on the key events.
 

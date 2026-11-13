@@ -9,8 +9,10 @@ swift build -c release --product WoWBarsHelper
 
 APP="build/WoW Bars Helper.app"
 rm -rf "$APP"
-mkdir -p "$APP/Contents/MacOS"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$(swift build -c release --show-bin-path)/WoWBarsHelper" "$APP/Contents/MacOS/WoWBarsHelper"
+# Regenerate with: swift tools/app-icon.swift <dir>/AppIcon.iconset && iconutil -c icns <dir>/AppIcon.iconset -o helper/Resources/AppIcon.icns
+cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -25,6 +27,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <string>WoW Bars Helper</string>
     <key>CFBundleExecutable</key>
     <string>WoWBarsHelper</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -43,4 +47,9 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 PLIST
 
 codesign --force --sign "${SIGN_IDENTITY:--}" --identifier cc.matos.streamdeck.wowbars.helper "$APP"
+
+# The bundle is recreated on every build, so refresh Launch Services and Finder's cached icon.
+LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+[ -x "$LSREGISTER" ] && "$LSREGISTER" -f "$APP"
+touch "$APP"
 echo "Built $APP"

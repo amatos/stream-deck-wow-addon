@@ -19,3 +19,8 @@ luacov.*.out
 
 # Helper app
 helper/build/
+
+# Stream Deck plugin build output
+plugin/cc.matos.streamdeck.wowbars.sdPlugin/bin/
+plugin/cc.matos.streamdeck.wowbars.sdPlugin/logs/
+plugin/cc.matos.streamdeck.wowbars.sdPlugin/ui/inspector.js

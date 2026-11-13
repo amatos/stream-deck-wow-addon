@@ -101,7 +101,7 @@ public enum StripDecoder {
         }
     }
 
-    /// Reads all 230 symbols, or nil when the grid is off-image or calibration is unusable.
+    /// Reads all symbols, or nil when the grid is off-image or calibration is unusable.
     public static func symbols<P: PixelSource>(_ img: P, _ g: StripGeometry) -> [Int]? {
         var cal: [(r: Int, g: Int, b: Int)] = []
         for i in 4..<8 {
@@ -133,7 +133,7 @@ public enum StripDecoder {
         guard Array(s[0..<4]) == Spec.marker else { return .failure(.badMarker) }
         guard s[8] == Spec.version else { return .failure(.badVersion(s[8])) }
         let (a, b) = Spec.checksum(s, from: Spec.checksumFirst, to: Spec.checksumLast)
-        guard s[228] == a, s[229] == b else { return .failure(.badChecksum) }
+        guard s[Spec.checksumLast + 1] == a, s[Spec.checksumLast + 2] == b else { return .failure(.badChecksum) }
         var slots: [SlotState] = []
         for i in 0..<Spec.slots {
             let first = Spec.headerSymbols + i * Spec.symbolsPerSlot

@@ -59,9 +59,9 @@ import Testing
 
     @Test func rejectsAnUnknownVersion() {
         var symbols = StripFrame.sample().symbols
-        symbols[8] = 2
+        symbols[8] = 4
         let g = StripGeometry(originX: 0, originY: 0, pitch: 4)
-        #expect(StripDecoder.decodeGrid(Render.image(symbols: symbols), g) == .failure(.badVersion(2)))
+        #expect(StripDecoder.decodeGrid(Render.image(symbols: symbols), g) == .failure(.badVersion(4)))
     }
 
     @Test func rejectsAWrongMarker() {
@@ -123,16 +123,13 @@ import Testing
 
     // MARK: The real thing
 
-    /// Screenshot of the strip from the game (WoW Forever, Bartender4, 3 counted slots).
-    @Test func decodesTheInGameScreenshot() throws {
-        let img = Fixtures.png("ingame-strip.png")
-        let (g, frame) = try #require(StripDecoder.locate(img))
-        #expect(g.pitch == 4)
-        #expect(g.originX == 0 && g.originY == 0)
-        #expect(frame.version == 1)
-        #expect(frame.flags.bindingsApplied)
-        let counted = frame.slots.filter(\.hasCount)
-        #expect(counted.map(\.count) == [2, 0, 3])
-        #expect(frame.slots.contains { $0.hasAction && $0.iconID > 0 })
+    /// Screenshot of a version 1 strip from the game (WoW Forever, Bartender4). Real pixels:
+    /// the marker and calibration still read, and the old version is recognised and rejected.
+    @Test func rejectsTheVersion1InGameScreenshot() throws {
+        let img = Fixtures.png("ingame-strip-v1.png")
+        let g = try #require(StripDecoder.candidates(in: img).first)
+        #expect(g == StripGeometry(originX: 0, originY: 0, pitch: 4))
+        #expect(StripDecoder.decodeGrid(img, g) == .failure(.badVersion(1)))
+        #expect(StripDecoder.locate(img) == nil)
     }
 }

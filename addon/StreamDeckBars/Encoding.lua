@@ -4,12 +4,12 @@ local _, ns = ...
 local Encoding = {}
 ns.Encoding = Encoding
 
-Encoding.VERSION = 1
+Encoding.VERSION = 3
 Encoding.BLOCK = 4          -- block size in physical pixels
 Encoding.WIDTH = 48         -- blocks per grid row
-Encoding.SLOTS = 36
+Encoding.SLOTS = 60          -- bars 1-5 x 12
 Encoding.SYMBOLS_PER_SLOT = 6
-Encoding.SYMBOL_COUNT = 230
+Encoding.SYMBOL_COUNT = 374
 
 Encoding.COUNT_FONT = "Fonts\\ARIALN.TTF"
 Encoding.COUNT_FONT_SIZE = 12
@@ -102,7 +102,7 @@ function Encoding.checksum(symbols, from, to)
 end
 
 -- Builds the full symbol list (1-based Lua array; element i+1 is spec symbol i).
--- slots: array of 36 slot tables (missing entries encode as empty).
+-- slots: array of 60 slot tables (missing entries encode as empty).
 function Encoding.buildFrame(sequence, flags, slots)
   local out = {}
   for i = 1, 4 do out[i] = Encoding.MARKER[i] end

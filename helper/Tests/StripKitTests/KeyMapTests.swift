@@ -18,23 +18,33 @@ import Testing
         #expect(bar3Tenth.keyCode == 0x52)
         #expect(bar3Tenth.modifiers == [.shift])
         #expect(bar3Tenth.bindingName == "SHIFT-NUMPAD0")
+
+        let bar4Last = try #require(KeyMap.key(slot: 47))
+        #expect(bar4Last.keyCode == 0x43)
+        #expect(bar4Last.modifiers == [])
+        #expect(bar4Last.bindingName == "NUMPADMULTIPLY")
+
+        let bar5First = try #require(KeyMap.key(slot: 48))
+        #expect(bar5First.keyCode == 0x53)
+        #expect(bar5First.modifiers == [.command])
+        #expect(bar5First.bindingName == "META-NUMPAD1")
     }
 
     @Test func coversAllSlotsWithUniqueBindings() {
-        let names = (0..<36).compactMap { KeyMap.key(slot: $0)?.bindingName }
-        #expect(names.count == 36)
-        #expect(Set(names).count == 36)
+        let names = (0..<60).compactMap { KeyMap.key(slot: $0)?.bindingName }
+        #expect(names.count == 60)
+        #expect(Set(names).count == 60)
     }
 
     @Test func neverUsesOption() {
-        for slot in 0..<36 {
+        for slot in 0..<60 {
             #expect(KeyMap.key(slot: slot)?.modifiers.contains(.option) == false)
         }
     }
 
     @Test func rejectsOutOfRangeSlots() {
         #expect(KeyMap.key(slot: -1) == nil)
-        #expect(KeyMap.key(slot: 36) == nil)
+        #expect(KeyMap.key(slot: 60) == nil)
     }
 
     @Test func listsModifierKeysInPressOrder() {
@@ -48,7 +58,7 @@ import Testing
         let url = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().appendingPathComponent("../../../addon/StreamDeckBars/Bindings.lua")
         let lua = try String(contentsOf: url, encoding: .utf8)
-        #expect(lua.contains(#"Bindings.PREFIXES = { "CTRL-SHIFT-", "CTRL-", "SHIFT-" }"#))
+        #expect(lua.contains(#"Bindings.PREFIXES = { "CTRL-SHIFT-", "CTRL-", "SHIFT-", "", "META-" }"#))
         for name in KeyMap.keyNames { #expect(lua.contains("\"\(name)\"")) }
     }
 }

@@ -1,10 +1,12 @@
--- Override keybinds for bars 1-3 (docs/strip-format.md §9).
+-- Override keybinds for bars 1-5 (docs/strip-format.md §9).
 local _, ns = ...
 
 local Bindings = {}
 ns.Bindings = Bindings
 
-Bindings.PREFIXES = { "CTRL-SHIFT-", "CTRL-", "SHIFT-" }
+-- Bar 4 has no modifier: bare keypad keys, which have no physical key to press by accident.
+-- Bar 5 uses Command (META), the one modifier left that is not ALT (self-cast).
+Bindings.PREFIXES = { "CTRL-SHIFT-", "CTRL-", "SHIFT-", "", "META-" }
 Bindings.KEYS = {
   "NUMPAD1", "NUMPAD2", "NUMPAD3", "NUMPAD4", "NUMPAD5", "NUMPAD6",
   "NUMPAD7", "NUMPAD8", "NUMPAD9", "NUMPAD0", "NUMPADDIVIDE", "NUMPADMULTIPLY",
@@ -13,8 +15,8 @@ Bindings.KEYS = {
 -- Returns every binding as { bar, button, key }.
 function Bindings.list()
   local out = {}
-  for bar = 1, 3 do
-    for button = 1, 12 do
+  for bar = 1, #Bindings.PREFIXES do
+    for button = 1, ns.Layout.BUTTONS[bar] do
       out[#out + 1] = {
         bar = bar,
         button = button,

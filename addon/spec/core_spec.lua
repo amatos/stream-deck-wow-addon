@@ -176,7 +176,7 @@ describe("Core", function()
 
     it("lists keys", function()
       Core.slash("keys")
-      assert.equal(36, #env.printed)
+      assert.equal(60, #env.printed)
       assert.matches("CTRL%-SHIFT%-NUMPAD1", env.printed[1])
     end)
 

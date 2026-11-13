@@ -1,4 +1,4 @@
--- Which button frames represent bars 1-3, and how keybinds reach them.
+-- Which button frames represent bars 1-5, and how keybinds reach them.
 -- Supports Blizzard's bars and Bartender4 (docs/strip-format.md §5.1, §9).
 local _, ns = ...
 
@@ -6,12 +6,24 @@ local Layout = {}
 ns.Layout = Layout
 
 -- Action slot of button 1 minus one, per bar (same for both layouts).
-Layout.BASE = { 0, 60, 48 }
+Layout.BASE = { 0, 60, 48, 24, 36 }
+-- Buttons mirrored per bar.
+Layout.BUTTONS = { 12, 12, 12, 12, 12 }
+Layout.SLOT_COUNT = 60
+
+-- Returns bar (1-5) and button for a strip slot (1-60), or nil when out of range.
+function Layout.barButton(slot)
+  if slot < 1 or slot > Layout.SLOT_COUNT then return nil end
+  local bar = math.floor((slot - 1) / 12) + 1
+  return bar, (slot - 1) % 12 + 1
+end
 
 Layout.blizzard = {
   name = "blizzard",
-  prefixes = { "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton" },
-  commands = { "ACTIONBUTTON", "MULTIACTIONBAR1BUTTON", "MULTIACTIONBAR2BUTTON" },
+  prefixes = { "ActionButton", "MultiBarBottomLeftButton", "MultiBarBottomRightButton", "MultiBarRightButton",
+    "MultiBarLeftButton" },
+  commands = { "ACTIONBUTTON", "MULTIACTIONBAR1BUTTON", "MULTIACTIONBAR2BUTTON", "MULTIACTIONBAR3BUTTON",
+    "MULTIACTIONBAR4BUTTON" },
 }
 
 function Layout.blizzard.buttonName(bar, n)
@@ -24,7 +36,7 @@ function Layout.blizzard.bind(owner, key, bar, n)
 end
 
 -- Bartender4 names its buttons by action slot: BT4Button<slot>. With its WoW 10
--- layout, the bars it labels 1, 2 and 3 use slots 1-12 (paged), 61-72 and 49-60.
+-- layout, the bars it labels 1-5 use slots 1-12 (paged), 61-72, 49-60, 25-36 and 37-48.
 Layout.bartender = {
   name = "bartender",
 }

@@ -1,11 +1,11 @@
-// Constants from docs/strip-format.md (version 1).
+// Constants from docs/strip-format.md (version 3).
 public enum Spec {
-    public static let version = 1
+    public static let version = 3
     public static let block = 4
     public static let width = 48
-    public static let slots = 36
+    public static let slots = 60
     public static let symbolsPerSlot = 6
-    public static let symbolCount = 230
+    public static let symbolCount = 374
 
     /// Marker symbols 0-3: magenta, green, cyan, yellow.
     public static let marker: [Int] = [51, 12, 15, 60]
@@ -14,10 +14,19 @@ public enum Spec {
 
     public static let headerSymbols = 12          // marker, calibration, version, sequence, flags
     public static let checksumFirst = 8           // version
-    public static let checksumLast = 227          // last slot record symbol
+    public static let checksumLast = 371          // last slot record symbol
 
-    // Count area (§7), in strip pixels at block size 4.
-    public static let countAreaY = 24
+    /// Buttons mirrored per bar (1-5).
+    public static let barButtons = [12, 12, 12, 12, 12]
+
+    /// Bar (1-5) and button (1-12) for a 0-based strip slot, or nil when out of range.
+    public static func barButton(slot: Int) -> (bar: Int, button: Int)? {
+        guard (0..<slots).contains(slot) else { return nil }
+        return (slot / 12 + 1, slot % 12 + 1)
+    }
+
+    // Count area (§7), in strip pixels at block size 4: one block below the grid.
+    public static var countAreaY: Int { gridRows * block + block }
     public static let countLineHeight = 14
     public static let countCellWidth = 32
     public static let countCellsPerLine = 6

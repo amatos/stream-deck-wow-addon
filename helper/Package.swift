@@ -8,6 +8,7 @@ let package = Package(
         .executable(name: "WoWBarsHelper", targets: ["WoWBarsHelper"]),
         .library(name: "StripKit", targets: ["StripKit"]),
         .library(name: "IconKit", targets: ["IconKit"]),
+        .library(name: "DeckKit", targets: ["DeckKit"]),
     ],
     targets: [
         // Pure decoding of the on-screen strip (docs/strip-format.md). No AppKit.
@@ -35,10 +36,12 @@ let package = Package(
         ),
         // Icons: BLP decoding, install discovery and reading files by ID.
         .target(name: "IconKit", dependencies: ["CascBridge"]),
+        // Stream Deck key images and the helper <-> plugin protocol.
+        .target(name: "DeckKit", dependencies: ["StripKit"]),
         // The macOS app: capture, settings window, Dock / menu bar presentation.
         .executableTarget(
             name: "WoWBarsHelper",
-            dependencies: ["StripKit", "IconKit"],
+            dependencies: ["StripKit", "IconKit", "DeckKit"],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
         .testTarget(
@@ -47,6 +50,7 @@ let package = Package(
             resources: [.copy("Fixtures")]
         ),
         .testTarget(name: "IconKitTests", dependencies: ["IconKit"]),
+        .testTarget(name: "DeckKitTests", dependencies: ["DeckKit", "StripKit"]),
     ],
     cxxLanguageStandard: .cxx17
 )

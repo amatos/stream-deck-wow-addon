@@ -42,9 +42,14 @@ enum Permissions {
 /// State shown in the window. Main thread only.
 final class Model: ObservableObject {
     @Published var snapshot = CaptureSnapshot() {
-        didSet { requestIcons() }
+        didSet { requestIcons(); deckFeed.update(snapshot: snapshot, icons: icons) }
     }
-    @Published var icons: [Int: NSImage] = [:]
+    @Published var icons: [Int: NSImage] = [:] {
+        didSet { deckFeed.update(snapshot: snapshot, icons: icons) }
+    }
+    @Published var deckClients = 0
+    let deckServer = DeckServer()
+    lazy var deckFeed = DeckFeed(server: deckServer)
     let iconLoader = IconLoader()
     @Published var screenRecording = Permissions.screenRecording
     @Published var accessibility = Permissions.accessibility
@@ -61,6 +66,14 @@ final class Model: ObservableObject {
     let keySender = KeySender()
     private var timer: Timer?
 
+    /// Starts the Stream Deck server; plugin key presses go to WoW without activating it.
+    func startDeck() {
+        deckServer.onPress = { [weak self] slot in self?.keySender.press(slot: slot, activate: false) }
+        deckServer.onClientsChanged = { [weak self] in self?.deckClients = $0 }
+        deckServer.start()
+        deckFeed.update(snapshot: snapshot, icons: icons)
+    }
+
     func startIcons() {
         iconLoader.onLoad = { [weak self] id, image in self?.icons[id] = image }
         requestIcons()
@@ -76,7 +89,8 @@ final class Model: ObservableObject {
     func press(slot: Int) {
         switch keySender.press(slot: slot, activate: true) {
         case .sent(let name):
-            lastKeyMessage = "Sent \(name) to WoW (bar \(slot / 12 + 1), button \(slot % 12 + 1))."
+            let (bar, button) = Spec.barButton(slot: slot) ?? (0, 0)
+            lastKeyMessage = "Sent \(name) to WoW (bar \(bar), button \(button))."
         case .noAccessibility:
             lastKeyMessage = "Grant Accessibility permission first."
         case .noWoW:

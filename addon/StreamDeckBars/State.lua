@@ -7,7 +7,6 @@ ns.State = State
 -- Last readable "has count" per action slot, used while counts are secret.
 State.countCache = {}
 
-local floor = math.floor
 
 local function isSecret(v)
   return issecretvalue ~= nil and issecretvalue(v) == true
@@ -39,9 +38,9 @@ end
 State.isSecret = isSecret
 State.readable = readable
 
--- Returns bar (1-3) and button (1-12) for a slot index (1-36).
+-- Returns bar (1-5) and button for a slot index (1-60).
 function State.barButton(slot)
-  return floor((slot - 1) / 12) + 1, (slot - 1) % 12 + 1
+  return ns.Layout.barButton(slot)
 end
 
 -- Returns the action slot shown on a strip slot, and its button frame.
@@ -155,11 +154,11 @@ function State.collectSlot(slot)
   }, count
 end
 
--- Collects all 36 slots. Returns slots, counts (array of values for slots with
+-- Collects all 60 slots. Returns slots, counts (array of values for slots with
 -- hasCount, in slot order) and whether any of those counts is secret.
 function State.collect()
   local slots, counts, anySecret = {}, {}, false
-  for slot = 1, 36 do
+  for slot = 1, ns.Layout.SLOT_COUNT do
     local s, count = State.collectSlot(slot)
     slots[slot] = s
     if s.hasCount then

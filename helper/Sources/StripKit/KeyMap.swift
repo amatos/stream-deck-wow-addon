@@ -22,21 +22,20 @@ public enum KeyMap {
     static let keyNames = ["NUMPAD1", "NUMPAD2", "NUMPAD3", "NUMPAD4", "NUMPAD5", "NUMPAD6",
                            "NUMPAD7", "NUMPAD8", "NUMPAD9", "NUMPAD0", "NUMPADDIVIDE", "NUMPADMULTIPLY"]
 
-    /// Modifier prefixes for bars 1...3.
-    public static let barModifiers: [Modifiers] = [[.control, .shift], [.control], [.shift]]
-    static let barPrefixes = ["CTRL-SHIFT-", "CTRL-", "SHIFT-"]
+    /// Modifier prefixes for bars 1...5. Bar 4 uses bare keypad keys, bar 5 Command (WoW's META).
+    public static let barModifiers: [Modifiers] = [[.control, .shift], [.control], [.shift], [], [.command]]
+    static let barPrefixes = ["CTRL-SHIFT-", "CTRL-", "SHIFT-", "", "META-"]
 
     /// macOS virtual keycodes of the left modifier keys.
     public static let modifierKeyCodes: [(Modifiers, UInt16)] = [
         (.control, 0x3B), (.shift, 0x38), (.option, 0x3A), (.command, 0x37),
     ]
 
-    /// Key for strip slot 0...35, or nil when out of range.
+    /// Key for a 0-based strip slot, or nil when out of range.
     public static func key(slot: Int) -> Key? {
-        guard (0..<Spec.slots).contains(slot) else { return nil }
-        let bar = slot / 12, button = slot % 12
-        return Key(keyCode: keyCodes[button], modifiers: barModifiers[bar],
-                   bindingName: barPrefixes[bar] + keyNames[button])
+        guard let (bar, button) = Spec.barButton(slot: slot) else { return nil }
+        return Key(keyCode: keyCodes[button - 1], modifiers: barModifiers[bar - 1],
+                   bindingName: barPrefixes[bar - 1] + keyNames[button - 1])
     }
 
     /// Keycodes of the modifiers to hold, in press order.

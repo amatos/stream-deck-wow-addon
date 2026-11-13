@@ -1,3 +1,4 @@
+import DeckKit
 import StripKit
 import SwiftUI
 
@@ -49,7 +50,7 @@ struct MainView: View {
     }
 
     private var game: some View {
-        GroupBox("World of Warcraft") {
+        GroupBox("Connections") {
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     StatusDot(ok: isCapturing)
@@ -58,6 +59,12 @@ struct MainView: View {
                 HStack {
                     StatusDot(ok: model.snapshot.status == .connected, warn: model.snapshot.status == .stale)
                     Text(stripText)
+                }
+                HStack {
+                    StatusDot(ok: model.deckClients > 0)
+                    Text(model.deckClients > 0
+                         ? "Stream Deck plugin connected"
+                         : "Stream Deck plugin not connected (listening on 127.0.0.1:\(DeckMessage.defaultPort))")
                 }
                 if let frame = model.snapshot.frame {
                     Text(details(frame))
@@ -73,10 +80,10 @@ struct MainView: View {
     private var slots: some View {
         GroupBox("Slots") {
             VStack(alignment: .leading, spacing: 6) {
-                ForEach(0..<3, id: \.self) { bar in
+                ForEach(0..<Spec.barButtons.count, id: \.self) { bar in
                     HStack(spacing: 4) {
                         Text("Bar \(bar + 1)").font(.caption).frame(width: 40, alignment: .leading)
-                        ForEach(0..<12, id: \.self) { button in
+                        ForEach(0..<Spec.barButtons[bar], id: \.self) { button in
                             let index = bar * 12 + button
                             Button { model.press(slot: index) } label: {
                                 SlotCell(slot: slot(index), icon: slot(index).flatMap { model.icons[$0.iconID] })

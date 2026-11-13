@@ -35,11 +35,11 @@ import Testing
         #expect(s.count == Spec.symbolCount)
         #expect(Array(s[0..<4]) == Spec.marker)
         #expect(Array(s[4..<8]) == Spec.calibration)
-        #expect(s[8] == 1)
+        #expect(s[8] == 3)
         #expect(s[9] == 0 && s[10] == 1)       // 4097 wraps to 1
         #expect(s[11] == 1)
-        let (a, b) = Spec.checksum(s, from: 8, to: 227)
-        #expect(s[228] == a && s[229] == b)
+        let (a, b) = Spec.checksum(s, from: 8, to: 371)
+        #expect(s[372] == a && s[373] == b)
     }
 
     @Test func checksumMatchesHandComputedValue() {
@@ -51,7 +51,16 @@ import Testing
         #expect(Spec.levels(of: 51) == (3, 0, 3))
         #expect(Spec.levels(of: 60) == (3, 3, 0))
         #expect(Spec.levels(of: 21) == (1, 1, 1))
-        #expect(Spec.gridRows == 5)
+        #expect(Spec.gridRows == 8)
+        #expect(Spec.countAreaY == 36)
+        #expect(Spec.barButton(slot: 0)! == (1, 1))
+        #expect(Spec.barButton(slot: 35)! == (3, 12))
+        #expect(Spec.barButton(slot: 36)! == (4, 1))
+        #expect(Spec.barButton(slot: 43)! == (4, 8))
+        #expect(Spec.barButton(slot: 47)! == (4, 12))
+        #expect(Spec.barButton(slot: 59)! == (5, 12))
+        #expect(Spec.barButton(slot: 60) == nil)
+        #expect(Spec.barButton(slot: -1) == nil)
     }
 
     @Test func geometryScale() {
