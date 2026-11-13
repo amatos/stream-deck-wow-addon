@@ -17,3 +17,27 @@ addon-test:
 addon-install:
 	mkdir -p "$(WOW_ADDONS)"
 	rsync -a --delete addon/StreamDeckBars/ "$(WOW_ADDONS)/StreamDeckBars/"
+
+.PHONY: helper-test helper-app helper-run fixtures
+
+HELPER_COV_BIN = helper/.build/debug/StripKitTests.xctest/Contents/MacOS/StripKitTests
+
+# Runs the helper's tests and reports StripKit line coverage.
+helper-test:
+	cd helper && swift test --enable-code-coverage
+	xcrun llvm-cov report $(HELPER_COV_BIN) -instr-profile helper/.build/debug/codecov/default.profdata \
+		-ignore-filename-regex '(Tests|WoWBarsHelper|\.build)/'
+
+# A stable identity keeps macOS permissions across rebuilds. Override with
+# `make helper-app SIGN_IDENTITY=-` for ad-hoc signing.
+SIGN_IDENTITY ?= Apple Development: Alberth Matos (9X3H5J6MYQ)
+
+helper-app:
+	SIGN_IDENTITY="$(SIGN_IDENTITY)" helper/scripts/bundle.sh
+
+helper-run: helper-app
+	open "helper/build/WoW Bars Helper.app"
+
+# Regenerates the Lua-encoded fixture the helper tests compare against.
+fixtures:
+	luajit tools/lua-fixture.lua > helper/Tests/StripKitTests/Fixtures/lua-frame.json

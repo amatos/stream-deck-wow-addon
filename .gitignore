@@ -16,3 +16,6 @@ luacov.*.out
 
 # Project-local Lua tooling
 .luarocks/
+
+# Helper app
+helper/build/
