@@ -42,7 +42,10 @@ enum Permissions {
 /// State shown in the window. Main thread only.
 final class Model: ObservableObject {
     @Published var snapshot = CaptureSnapshot() {
-        didSet { requestIcons(); deckFeed.update(snapshot: snapshot, icons: icons) }
+        didSet {
+            requestIcons()
+            deckFeed.update(snapshot: snapshot, icons: icons)
+        }
     }
     @Published var icons: [Int: NSImage] = [:] {
         didSet { deckFeed.update(snapshot: snapshot, icons: icons) }

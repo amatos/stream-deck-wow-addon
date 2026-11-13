@@ -8,8 +8,9 @@ import UniformTypeIdentifiers
 let srgb = CGColorSpace(name: CGColorSpace.sRGB)!
 
 func colour(_ hex: UInt32, _ a: CGFloat = 1) -> CGColor {
-    CGColor(srgbRed: CGFloat(hex >> 16 & 0xFF) / 255, green: CGFloat(hex >> 8 & 0xFF) / 255,
-            blue: CGFloat(hex & 0xFF) / 255, alpha: a)
+    CGColor(
+        srgbRed: CGFloat(hex >> 16 & 0xFF) / 255, green: CGFloat(hex >> 8 & 0xFF) / 255,
+        blue: CGFloat(hex & 0xFF) / 255, alpha: a)
 }
 
 func gradient(_ a: UInt32, _ b: UInt32) -> CGGradient {
@@ -21,14 +22,14 @@ func wPath(in r: CGRect) -> CGPath {
     func p(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: r.minX + x * r.width, y: r.minY + y * r.height) }
     let path = CGMutablePath()
     path.addLines(between: [
-        p(0.00, 1.00), p(0.22, 1.00),   // left top
-        p(0.32, 0.36),                  // down left inner stroke
-        p(0.43, 0.80), p(0.57, 0.80),   // middle peak
-        p(0.68, 0.36),                  // down right inner stroke
-        p(0.78, 1.00), p(1.00, 1.00),   // right top
-        p(0.80, 0.00), p(0.62, 0.00),   // right foot
-        p(0.50, 0.48),                  // centre valley
-        p(0.38, 0.00), p(0.20, 0.00),   // left foot
+        p(0.00, 1.00), p(0.22, 1.00),  // left top
+        p(0.32, 0.36),  // down left inner stroke
+        p(0.43, 0.80), p(0.57, 0.80),  // middle peak
+        p(0.68, 0.36),  // down right inner stroke
+        p(0.78, 1.00), p(1.00, 1.00),  // right top
+        p(0.80, 0.00), p(0.62, 0.00),  // right foot
+        p(0.50, 0.48),  // centre valley
+        p(0.38, 0.00), p(0.20, 0.00),  // left foot
     ])
     path.closeSubpath()
     return path
@@ -36,8 +37,9 @@ func wPath(in r: CGRect) -> CGPath {
 
 func draw(size px: Int) -> CGImage {
     let s = CGFloat(px) / 1024
-    let ctx = CGContext(data: nil, width: px, height: px, bitsPerComponent: 8, bytesPerRow: px * 4,
-                        space: srgb, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+    let ctx = CGContext(
+        data: nil, width: px, height: px, bitsPerComponent: 8, bytesPerRow: px * 4,
+        space: srgb, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
     ctx.scaleBy(x: s, y: s)
     ctx.interpolationQuality = .high
 
@@ -61,7 +63,8 @@ func draw(size px: Int) -> CGImage {
     ctx.strokePath()
 
     // 4 x 3 key grid.
-    let cols = 4, rows = 3
+    let cols = 4
+    let rows = 3
     let gap: CGFloat = 20
     let tile: CGFloat = (body.width - 2 * 78 - CGFloat(cols - 1) * gap) / CGFloat(cols)
     let gridW = CGFloat(cols) * tile + CGFloat(cols - 1) * gap
@@ -70,8 +73,9 @@ func draw(size px: Int) -> CGImage {
     var tiles: [CGPath] = []
     for row in 0..<rows {
         for col in 0..<cols {
-            let r = CGRect(x: grid.minX + CGFloat(col) * (tile + gap), y: grid.minY + CGFloat(row) * (tile + gap),
-                           width: tile, height: tile)
+            let r = CGRect(
+                x: grid.minX + CGFloat(col) * (tile + gap), y: grid.minY + CGFloat(row) * (tile + gap),
+                width: tile, height: tile)
             tiles.append(CGPath(roundedRect: r, cornerWidth: 26, cornerHeight: 26, transform: nil))
         }
     }

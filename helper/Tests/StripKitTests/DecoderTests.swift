@@ -1,4 +1,5 @@
 import Testing
+
 @testable import StripKit
 
 @Suite struct DecoderTests {
@@ -13,7 +14,10 @@ import Testing
 
     @Test func findsAStripAwayFromTheOrigin() throws {
         var o = Render.Options()
-        o.originX = 37; o.originY = 53; o.width = 400; o.height = 200
+        o.originX = 37
+        o.originY = 53
+        o.width = 400
+        o.height = 200
         let frame = StripFrame.sample(sequence: 4000)
         let (g, decoded) = try #require(StripDecoder.locate(Render.image(frame, o)))
         #expect(g == StripGeometry(originX: 37, originY: 53, pitch: 1))
@@ -22,7 +26,9 @@ import Testing
 
     @Test func handlesDoubleScale() throws {
         var o = Render.Options()
-        o.scale = 2; o.width = 500; o.height = 200
+        o.scale = 2
+        o.width = 500
+        o.height = 200
         let frame = StripFrame.sample(counted: [1, 2])
         let (g, decoded) = try #require(StripDecoder.locate(Render.image(frame, counts: [12, 7], o)))
         #expect(g.pitch == 2)
@@ -32,7 +38,9 @@ import Testing
 
     @Test func handlesTheVersion1BlockSize() throws {
         var o = Render.Options()
-        o.scale = 4; o.width = 800; o.height = 400
+        o.scale = 4
+        o.width = 800
+        o.height = 400
         let frame = StripFrame.sample(counted: [7])
         let (g, decoded) = try #require(StripDecoder.locate(Render.image(frame, counts: [42], o)))
         #expect(g.pitch == 4)
@@ -44,7 +52,8 @@ import Testing
         var symbols = StripFrame.sample().symbols
         let (g, _) = try #require(StripDecoder.locate(Render.image(symbols: symbols)))
         #expect(g.pitch == 1)
-        symbols[13] = 63; symbols[14] = 0
+        symbols[13] = 63
+        symbols[14] = 0
         #expect(StripDecoder.symbols(Render.image(symbols: symbols), g)?[13...14] == [63, 0])
     }
 
@@ -58,10 +67,13 @@ import Testing
 
     @Test func ignoresDecoyMagentaAreas() {
         var o = Render.Options()
-        o.originX = 40; o.originY = 60; o.width = 400; o.height = 200
+        o.originX = 40
+        o.originY = 60
+        o.width = 400
+        o.height = 200
         var img = Render.image(StripFrame.sample(), o)
-        img.fill(x: 2, y: 2, w: 20, h: 8, (255, 0, 255))     // magenta but no marker after it
-        img.fill(x: 0, y: 20, w: 4, h: 4, (255, 0, 255))     // marker colours, wrong spacing
+        img.fill(x: 2, y: 2, w: 20, h: 8, (255, 0, 255))  // magenta but no marker after it
+        img.fill(x: 0, y: 20, w: 4, h: 4, (255, 0, 255))  // marker colours, wrong spacing
         img.fill(x: 4, y: 20, w: 9, h: 4, (0, 255, 0))
         #expect(decode(img) == StripFrame.sample())
     }
@@ -94,7 +106,7 @@ import Testing
 
     @Test func rejectsAGridOffTheImage() {
         var o = Render.Options()
-        o.width = 40   // narrower than the 48 px grid
+        o.width = 40  // narrower than the 48 px grid
         let g = StripGeometry(originX: 0, originY: 0, pitch: 1)
         #expect(StripDecoder.decodeGrid(Render.image(StripFrame.sample(), o), g) == .failure(.offImage))
         #expect(StripDecoder.symbols(RGBImage(width: 4, height: 4), g) == nil)

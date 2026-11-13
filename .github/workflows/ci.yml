@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  addon:
+    name: Addon (lint, tests, fixture, versions)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cachix/install-nix-action@v31
+      - name: Lint
+        run: nix develop -c make addon-lint
+      - name: Tests and coverage gate
+        run: nix develop -c make addon-test
+      - name: Fixture drift
+        run: nix develop -c make fixtures-check
+      - name: Version consistency
+        run: make version-check
+
+  plugin:
+    name: Plugin (types, tests, build, manifest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: plugin/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: plugin
+      - name: Type check, tests and coverage gate
+        run: make plugin-test
+      - name: Build and validate manifest
+        run: make plugin-validate
+
+  helper:
+    name: Helper (lint, tests, app build)
+    # macOS 27 with Xcode 27, so swift-format matches the version the code was formatted with.
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v6
+      - name: Toolchain
+        run: swift --version && swift format --version
+      - name: Lint
+        run: make helper-lint
+      - name: Tests and coverage gate
+        run: make helper-test
+      - name: Build the app (ad-hoc signed)
+        run: make helper-app SIGN_IDENTITY=-

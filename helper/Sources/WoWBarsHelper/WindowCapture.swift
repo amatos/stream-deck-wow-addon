@@ -71,7 +71,8 @@ final class WindowCapture: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 
     private func choose(from windows: [SCWindow]) {
-        let wow = windows
+        let wow =
+            windows
             .filter { $0.owningApplication?.bundleIdentifier == Self.wowBundleID && $0.windowLayer == 0 }
             .filter { $0.frame.width >= 200 && $0.frame.height >= 150 }
             .max { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
@@ -153,7 +154,8 @@ final class WindowCapture: NSObject, SCStreamOutput, SCStreamDelegate {
 
     func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
         guard type == .screen, sampleBuffer.isValid, Self.isComplete(sampleBuffer),
-              let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+            let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+        else { return }
         CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly) }
         guard let base = CVPixelBufferGetBaseAddress(pixelBuffer) else { return }
@@ -180,10 +182,12 @@ final class WindowCapture: NSObject, SCStreamOutput, SCStreamDelegate {
     }
 
     static func isComplete(_ sampleBuffer: CMSampleBuffer) -> Bool {
-        guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false)
+        guard
+            let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false)
                 as? [[SCStreamFrameInfo: Any]],
-              let raw = attachments.first?[.status] as? Int,
-              let status = SCFrameStatus(rawValue: raw) else { return false }
+            let raw = attachments.first?[.status] as? Int,
+            let status = SCFrameStatus(rawValue: raw)
+        else { return false }
         return status == .complete
     }
 

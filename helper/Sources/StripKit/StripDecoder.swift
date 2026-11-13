@@ -14,9 +14,15 @@ public enum StripDecoder {
         for y in 0..<img.height {
             var x = 0
             while x < img.width {
-                guard isMagenta(img.rgb(x, y)) else { x += 1; continue }
+                guard isMagenta(img.rgb(x, y)) else {
+                    x += 1
+                    continue
+                }
                 // Only consider the top-left corner of a magenta area.
-                if y > 0 && isMagenta(img.rgb(x, y - 1)) { x += 1; continue }
+                if y > 0 && isMagenta(img.rgb(x, y - 1)) {
+                    x += 1
+                    continue
+                }
                 if let g = markerGeometry(img, x: x, y: y) {
                     out.append(g)
                     if out.count >= limit { return out }
@@ -63,7 +69,8 @@ public enum StripDecoder {
     /// Block `index`'s colour, or nil when off-image: its single pixel for blocks under
     /// 2 px, otherwise the average of its central 2x2 pixels.
     static func sample<P: PixelSource>(_ img: P, _ g: StripGeometry, _ index: Int) -> (r: Int, g: Int, b: Int)? {
-        let col = index % Spec.width, row = index / Spec.width
+        let col = index % Spec.width
+        let row = index / Spec.width
         if g.pitch < 2 {
             let x = g.originX + Int((Double(col) * g.pitch).rounded(.down))
             let y = g.originY + Int((Double(row) * g.pitch).rounded(.down))
@@ -72,19 +79,24 @@ public enum StripDecoder {
         }
         let cx = Double(g.originX) + (Double(col) + 0.5) * g.pitch
         let cy = Double(g.originY) + (Double(row) + 0.5) * g.pitch
-        let x0 = Int((cx - 0.5).rounded(.down)), y0 = Int((cy - 0.5).rounded(.down))
+        let x0 = Int((cx - 0.5).rounded(.down))
+        let y0 = Int((cy - 0.5).rounded(.down))
         guard x0 >= 0, y0 >= 0, x0 + 1 < img.width, y0 + 1 < img.height else { return nil }
-        var r = 0, gg = 0, b = 0
+        var r = 0
+        var gg = 0
+        var b = 0
         for (dx, dy) in [(0, 0), (1, 0), (0, 1), (1, 1)] {
             let p = img.rgb(x0 + dx, y0 + dy)
-            r += p.r; gg += p.g; b += p.b
+            r += p.r
+            gg += p.g
+            b += p.b
         }
         return (r / 4, gg / 4, b / 4)
     }
 
     /// Measured values of levels 0...3 per channel, from the calibration blocks.
     public struct Calibration: Equatable, Sendable {
-        public var levels: [[Int]]   // [channel][level]
+        public var levels: [[Int]]  // [channel][level]
 
         public init?(samples: [(r: Int, g: Int, b: Int)]) {
             guard samples.count == 4 else { return nil }
@@ -95,10 +107,14 @@ public enum StripDecoder {
         }
 
         public func classify(_ value: Int, channel: Int) -> Int {
-            var best = 0, bestDistance = Int.max
+            var best = 0
+            var bestDistance = Int.max
             for (k, level) in levels[channel].enumerated() {
                 let d = abs(value - level)
-                if d < bestDistance { best = k; bestDistance = d }
+                if d < bestDistance {
+                    best = k
+                    bestDistance = d
+                }
             }
             return best
         }
@@ -146,9 +162,10 @@ public enum StripDecoder {
             let first = Spec.headerSymbols + i * Spec.symbolsPerSlot
             slots.append(SlotState(record: s[first..<(first + Spec.symbolsPerSlot)]))
         }
-        return .success(StripFrame(
-            version: s[8], sequence: s[9] * 64 + s[10], flags: GlobalFlags(symbol: s[11]), slots: slots
-        ))
+        return .success(
+            StripFrame(
+                version: s[8], sequence: s[9] * 64 + s[10], flags: GlobalFlags(symbol: s[11]), slots: slots
+            ))
     }
 
     /// Decodes the grid and fills in counts read from the count area.

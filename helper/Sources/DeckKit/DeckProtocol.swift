@@ -24,9 +24,9 @@ public enum DeckMessage: Equatable, Sendable {
     public func encoded() -> Data {
         let wire: Wire
         switch self {
-        case let .slot(slot, image): wire = Wire(type: "slot", slot: slot, image: image)
-        case let .hello(version): wire = Wire(type: "hello", version: version)
-        case let .press(slot): wire = Wire(type: "press", slot: slot)
+        case .slot(let slot, let image): wire = Wire(type: "slot", slot: slot, image: image)
+        case .hello(let version): wire = Wire(type: "hello", version: version)
+        case .press(let slot): wire = Wire(type: "press", slot: slot)
         }
         return try! JSONEncoder().encode(wire)
     }

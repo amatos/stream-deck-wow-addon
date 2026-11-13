@@ -4,8 +4,10 @@ public struct GlobalFlags: Equatable, Sendable {
     public var bindingsPending = false
     public var countsSecret = false
 
-    public init(inCombat: Bool = false, bindingsApplied: Bool = false,
-                bindingsPending: Bool = false, countsSecret: Bool = false) {
+    public init(
+        inCombat: Bool = false, bindingsApplied: Bool = false,
+        bindingsPending: Bool = false, countsSecret: Bool = false
+    ) {
         self.inCombat = inCombat
         self.bindingsApplied = bindingsApplied
         self.bindingsPending = bindingsPending
@@ -36,9 +38,11 @@ public struct SlotState: Equatable, Sendable {
     /// Decoded from the count area; nil when there is no count or it could not be read.
     public var count: Int?
 
-    public init(iconID: Int = 0, hasAction: Bool = false, usable: Bool = false, noMana: Bool = false,
-                glow: Bool = false, rangeApplies: Bool = false, inRange: Bool = false,
-                hasCount: Bool = false, count: Int? = nil) {
+    public init(
+        iconID: Int = 0, hasAction: Bool = false, usable: Bool = false, noMana: Bool = false,
+        glow: Bool = false, rangeApplies: Bool = false, inRange: Bool = false,
+        hasCount: Bool = false, count: Int? = nil
+    ) {
         self.iconID = iconID
         self.hasAction = hasAction
         self.usable = usable

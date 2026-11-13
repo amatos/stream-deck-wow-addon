@@ -19,8 +19,10 @@ public enum KeyMap {
 
     /// Keypad keys for buttons 1...12.
     public static let keyCodes: [UInt16] = [0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5B, 0x5C, 0x52, 0x4B, 0x43]
-    static let keyNames = ["NUMPAD1", "NUMPAD2", "NUMPAD3", "NUMPAD4", "NUMPAD5", "NUMPAD6",
-                           "NUMPAD7", "NUMPAD8", "NUMPAD9", "NUMPAD0", "NUMPADDIVIDE", "NUMPADMULTIPLY"]
+    static let keyNames = [
+        "NUMPAD1", "NUMPAD2", "NUMPAD3", "NUMPAD4", "NUMPAD5", "NUMPAD6",
+        "NUMPAD7", "NUMPAD8", "NUMPAD9", "NUMPAD0", "NUMPADDIVIDE", "NUMPADMULTIPLY",
+    ]
 
     /// Modifier prefixes for bars 1...5. Bar 4 uses bare keypad keys, bar 5 Command (WoW's META).
     public static let barModifiers: [Modifiers] = [[.control, .shift], [.control], [.shift], [], [.command]]
@@ -34,8 +36,9 @@ public enum KeyMap {
     /// Key for a 0-based strip slot, or nil when out of range.
     public static func key(slot: Int) -> Key? {
         guard let (bar, button) = Spec.barButton(slot: slot) else { return nil }
-        return Key(keyCode: keyCodes[button - 1], modifiers: barModifiers[bar - 1],
-                   bindingName: barPrefixes[bar - 1] + keyNames[button - 1])
+        return Key(
+            keyCode: keyCodes[button - 1], modifiers: barModifiers[bar - 1],
+            bindingName: barPrefixes[bar - 1] + keyNames[button - 1])
     }
 
     /// Keycodes of the modifiers to hold, in press order.

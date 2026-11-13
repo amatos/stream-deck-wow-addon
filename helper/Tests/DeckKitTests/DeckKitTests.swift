@@ -3,6 +3,7 @@ import Foundation
 import ImageIO
 import StripKit
 import Testing
+
 @testable import DeckKit
 
 /// Reads pixels (r, g, b) from a rendered key, top-left origin.
@@ -11,11 +12,13 @@ struct Pixels {
     var bytes: [UInt8]
 
     init(_ image: CGImage) {
-        w = image.width; h = image.height
+        w = image.width
+        h = image.height
         bytes = [UInt8](repeating: 0, count: w * h * 4)
-        let ctx = CGContext(data: &bytes, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
-                            space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        let ctx = CGContext(
+            data: &bytes, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
         ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
     }
 
@@ -27,9 +30,10 @@ struct Pixels {
 
 /// A solid orange 64x64 test icon.
 func orangeIcon() -> CGImage {
-    let ctx = CGContext(data: nil, width: 64, height: 64, bitsPerComponent: 8, bytesPerRow: 256,
-                        space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                        bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+    let ctx = CGContext(
+        data: nil, width: 64, height: 64, bitsPerComponent: 8, bytesPerRow: 256,
+        space: CGColorSpace(name: CGColorSpace.sRGB)!,
+        bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
     ctx.setFillColor(CGColor(srgbRed: 1, green: 0.5, blue: 0, alpha: 1))
     ctx.fill(CGRect(x: 0, y: 0, width: 64, height: 64))
     return ctx.makeImage()!
@@ -58,21 +62,25 @@ func face(_ slot: SlotState?, connected: Bool = true, loaded: Bool = true) -> Ke
     }
 
     @Test func unusableSlotIsGreyAndDark() {
-        var slot = usable; slot.usable = false
+        var slot = usable
+        slot.usable = false
         let (r, g, b) = Pixels(KeyRenderer.render(face(slot), icon: orangeIcon())).at(72, 72)
         #expect(abs(r - g) < 6 && abs(g - b) < 6)
         #expect(r < 120)
     }
 
     @Test func noManaIsTintedBlue() {
-        var slot = usable; slot.usable = false; slot.noMana = true
+        var slot = usable
+        slot.usable = false
+        slot.noMana = true
         let (r, _, b) = Pixels(KeyRenderer.render(face(slot), icon: orangeIcon())).at(72, 72)
         #expect(b > 90)
         #expect(r < 200)
     }
 
     @Test func glowDrawsAGoldBorder() {
-        var slot = usable; slot.glow = true
+        var slot = usable
+        slot.glow = true
         let p = Pixels(KeyRenderer.render(face(slot), icon: orangeIcon()))
         let (r, g, b) = p.at(5, 72)
         #expect(r > 240 && g > 190 && b < 80)
@@ -80,7 +88,9 @@ func face(_ slot: SlotState?, connected: Bool = true, loaded: Bool = true) -> Ke
     }
 
     @Test func countIsDrawnBottomRight() {
-        var slot = usable; slot.hasCount = true; slot.count = 8
+        var slot = usable
+        slot.hasCount = true
+        slot.count = 8
         let p = Pixels(KeyRenderer.render(face(slot), icon: nil))
         var white = 0
         for y in 90..<140 { for x in 90..<140 where p.at(x, y) == (255, 255, 255) { white += 1 } }
@@ -126,7 +136,8 @@ func face(_ slot: SlotState?, connected: Bool = true, loaded: Bool = true) -> Ke
 
     @Test func equalStatesGiveEqualFaces() {
         let a = SlotState(iconID: 9, hasAction: true, usable: true, rangeApplies: true, inRange: true)
-        var b = a; b.inRange = false   // range is not shown, so it does not change the face
+        var b = a
+        b.inRange = false  // range is not shown, so it does not change the face
         #expect(face(a) == face(b))
         b.glow = true
         #expect(face(a) != face(b))
@@ -145,8 +156,10 @@ func face(_ slot: SlotState?, connected: Bool = true, loaded: Bool = true) -> Ke
     }
 
     @Test func rejectsBadMessages() {
-        for text in [#"{"type":"press"}"#, #"{"type":"press","slot":60}"#, #"{"type":"press","slot":-1}"#,
-                     #"{"type":"slot","slot":1}"#, #"{"type":"dance"}"#, "not json"] {
+        for text in [
+            #"{"type":"press"}"#, #"{"type":"press","slot":60}"#, #"{"type":"press","slot":-1}"#,
+            #"{"type":"slot","slot":1}"#, #"{"type":"dance"}"#, "not json",
+        ] {
             #expect(DeckMessage.decode(Data(text.utf8)) == nil, "\(text)")
         }
     }
@@ -158,11 +171,13 @@ func face(_ slot: SlotState?, connected: Bool = true, loaded: Bool = true) -> Ke
 
 @Suite struct EmblemTests {
     func render(_ size: Int, gap: CGFloat) -> Pixels {
-        let ctx = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
-                            space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
-        Emblem.drawMono(in: ctx, rect: CGRect(x: 0, y: 0, width: size, height: size),
-                        colour: CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 1), gap: gap)
+        let ctx = CGContext(
+            data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        Emblem.drawMono(
+            in: ctx, rect: CGRect(x: 0, y: 0, width: size, height: size),
+            colour: CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 1), gap: gap)
         return Pixels(ctx.makeImage()!)
     }
 

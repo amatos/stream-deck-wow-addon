@@ -4,7 +4,7 @@ import Foundation
 public struct RGBAImage: Equatable, Sendable {
     public let width: Int
     public let height: Int
-    public var pixels: [UInt8]   // r, g, b, a per pixel
+    public var pixels: [UInt8]  // r, g, b, a per pixel
 
     public init(width: Int, height: Int, pixels: [UInt8]) {
         self.width = width
@@ -34,18 +34,24 @@ public enum BLP {
         guard b.count >= headerSize, b[0] == 0x42, b[1] == 0x4C, b[2] == 0x50, b[3] == 0x32 else {
             throw DecodeError.notBLP2
         }
-        let compression = Int(b[8]), alphaDepth = Int(b[9]), alphaType = Int(b[10])
-        let width = Int(u32(b, 12)), height = Int(u32(b, 16))
-        let offset = Int(u32(b, 20)), size = Int(u32(b, 84))
+        let compression = Int(b[8])
+        let alphaDepth = Int(b[9])
+        let alphaType = Int(b[10])
+        let width = Int(u32(b, 12))
+        let height = Int(u32(b, 16))
+        let offset = Int(u32(b, 20))
+        let size = Int(u32(b, 84))
         guard width > 0, height > 0, width <= 4096, height <= 4096,
-              offset >= 0, size >= 0, offset + size <= b.count else { throw DecodeError.truncated }
+            offset >= 0, size >= 0, offset + size <= b.count
+        else { throw DecodeError.truncated }
         let mip = b[offset..<(offset + size)]
 
         switch compression {
         case 1:
             guard b.count >= headerSize + paletteSize else { throw DecodeError.truncated }
-            return try palette(Array(mip), palette: Array(b[headerSize..<(headerSize + paletteSize)]),
-                               width: width, height: height, alphaDepth: alphaDepth)
+            return try palette(
+                Array(mip), palette: Array(b[headerSize..<(headerSize + paletteSize)]),
+                width: width, height: height, alphaDepth: alphaDepth)
         case 2:
             let format: DXT
             switch (alphaDepth, alphaType) {
@@ -116,7 +122,8 @@ public enum BLP {
     }
 
     static func dxt(_ mip: [UInt8], width: Int, height: Int, format: DXT) throws -> RGBAImage {
-        let bw = (width + 3) / 4, bh = (height + 3) / 4
+        let bw = (width + 3) / 4
+        let bh = (height + 3) / 4
         guard mip.count >= bw * bh * format.blockSize else { throw DecodeError.truncated }
         var out = [UInt8](repeating: 0, count: width * height * 4)
         for by in 0..<bh {
@@ -138,14 +145,18 @@ public enum BLP {
                 }
                 var transparent = false
                 if case .dxt1(let a) = format { transparent = a }
-                let colours = colourBlock(mip, colourAt, threeColourMode: format != .dxt3 && format != .dxt5,
-                                          transparentBlack: transparent)
+                let colours = colourBlock(
+                    mip, colourAt, threeColourMode: format != .dxt3 && format != .dxt5,
+                    transparentBlack: transparent)
                 for i in 0..<16 {
-                    let x = bx * 4 + i % 4, y = by * 4 + i / 4
+                    let x = bx * 4 + i % 4
+                    let y = by * 4 + i / 4
                     guard x < width, y < height else { continue }
                     let c = colours[i]
                     let o = (y * width + x) * 4
-                    out[o] = c.0; out[o + 1] = c.1; out[o + 2] = c.2
+                    out[o] = c.0
+                    out[o + 1] = c.1
+                    out[o + 2] = c.2
                     out[o + 3] = format == .dxt3 || format == .dxt5 ? alphas[i] : c.3
                 }
             }
@@ -154,14 +165,18 @@ public enum BLP {
     }
 
     static func rgb565(_ v: Int) -> (Int, Int, Int) {
-        let r = (v >> 11) & 31, g = (v >> 5) & 63, b = v & 31
+        let r = (v >> 11) & 31
+        let g = (v >> 5) & 63
+        let b = v & 31
         return ((r << 3) | (r >> 2), (g << 2) | (g >> 4), (b << 3) | (b >> 2))
     }
 
     /// Returns 16 RGBA texels for a DXT colour block.
     static func colourBlock(_ m: [UInt8], _ at: Int, threeColourMode: Bool, transparentBlack: Bool) -> [(UInt8, UInt8, UInt8, UInt8)] {
-        let v0 = u16(m, at), v1 = u16(m, at + 2)
-        let c0 = rgb565(v0), c1 = rgb565(v1)
+        let v0 = u16(m, at)
+        let v1 = u16(m, at + 2)
+        let c0 = rgb565(v0)
+        let c1 = rgb565(v1)
         var palette: [(Int, Int, Int, Int)] = [(c0.0, c0.1, c0.2, 255), (c1.0, c1.1, c1.2, 255)]
         if v0 > v1 || !threeColourMode {
             palette.append(((2 * c0.0 + c1.0) / 3, (2 * c0.1 + c1.1) / 3, (2 * c0.2 + c1.2) / 3, 255))
@@ -178,7 +193,8 @@ public enum BLP {
     }
 
     static func dxt5Alpha(_ m: [UInt8], _ at: Int) -> [UInt8] {
-        let a0 = Int(m[at]), a1 = Int(m[at + 1])
+        let a0 = Int(m[at])
+        let a1 = Int(m[at + 1])
         var table = [a0, a1]
         if a0 > a1 {
             for k in 1...6 { table.append(((7 - k) * a0 + k * a1) / 7) }

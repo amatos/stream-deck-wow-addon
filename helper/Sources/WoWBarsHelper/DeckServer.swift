@@ -14,7 +14,7 @@ final class DeckServer {
     private let queue = DispatchQueue(label: "WoWBarsHelper.deck")
     private var listener: NWListener?
     private var connections: [ObjectIdentifier: NWConnection] = [:]
-    private var images: [Int: String] = [:]   // latest image per slot
+    private var images: [Int: String] = [:]  // latest image per slot
 
     init(port: UInt16 = DeckMessage.defaultPort) {
         self.port = port

@@ -62,9 +62,10 @@ struct MainView: View {
                 }
                 HStack {
                     StatusDot(ok: model.deckClients > 0)
-                    Text(model.deckClients > 0
-                         ? "Stream Deck plugin connected"
-                         : "Stream Deck plugin not connected (listening on 127.0.0.1:\(DeckMessage.defaultPort))")
+                    Text(
+                        model.deckClients > 0
+                            ? "Stream Deck plugin connected"
+                            : "Stream Deck plugin not connected (listening on 127.0.0.1:\(DeckMessage.defaultPort))")
                 }
                 if let frame = model.snapshot.frame {
                     Text(details(frame))
@@ -85,7 +86,9 @@ struct MainView: View {
                         Text("Bar \(bar + 1)").font(.caption).frame(width: 40, alignment: .leading)
                         ForEach(0..<Spec.barButtons[bar], id: \.self) { button in
                             let index = bar * 12 + button
-                            Button { model.press(slot: index) } label: {
+                            Button {
+                                model.press(slot: index)
+                            } label: {
                                 SlotCell(slot: slot(index), icon: slot(index).flatMap { model.icons[$0.iconID] })
                             }
                             .buttonStyle(.plain)
@@ -129,7 +132,7 @@ struct MainView: View {
         switch model.snapshot.source {
         case .noPermission: return "Waiting for Screen Recording permission"
         case .noWindow: return "WoW window not found"
-        case let .capturing(title, w, h):
+        case .capturing(let title, let w, let h):
             return "Capturing “\(title)” at \(w)×\(h), \(Int(model.snapshot.framesPerSecond)) fps"
         case .failed(let message): return "Capture failed: \(message)"
         }
@@ -191,8 +194,9 @@ struct SlotCell: View {
                     .clipShape(RoundedRectangle(cornerRadius: 5))
             }
             RoundedRectangle(cornerRadius: 5)
-                .strokeBorder(slot?.glow == true ? Color.yellow : Color.secondary.opacity(0.3),
-                              lineWidth: slot?.glow == true ? 3 : 1)
+                .strokeBorder(
+                    slot?.glow == true ? Color.yellow : Color.secondary.opacity(0.3),
+                    lineWidth: slot?.glow == true ? 3 : 1)
             if let slot, slot.hasAction, icon == nil {
                 Text(String(slot.iconID))
                     .font(.system(size: 8).monospacedDigit())

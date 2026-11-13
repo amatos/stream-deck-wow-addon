@@ -17,7 +17,8 @@ public enum Emblem {
 
     /// The 4 x 3 key tiles, as one path, fitted to the width of `r` and centred vertically.
     public static func tilesPath(in r: CGRect, gap: CGFloat) -> CGPath {
-        let cols = 4, rows = 3
+        let cols = 4
+        let rows = 3
         let tile = (r.width - CGFloat(cols - 1) * gap) / CGFloat(cols)
         let gridH = CGFloat(rows) * tile + CGFloat(rows - 1) * gap
         let top = r.midY - gridH / 2
@@ -25,8 +26,9 @@ public enum Emblem {
         let path = CGMutablePath()
         for row in 0..<rows {
             for col in 0..<cols {
-                let t = CGRect(x: r.minX + CGFloat(col) * (tile + gap), y: top + CGFloat(row) * (tile + gap),
-                               width: tile, height: tile)
+                let t = CGRect(
+                    x: r.minX + CGFloat(col) * (tile + gap), y: top + CGFloat(row) * (tile + gap),
+                    width: tile, height: tile)
                 path.addRoundedRect(in: t, cornerWidth: radius, cornerHeight: radius)
             }
         }

@@ -12,9 +12,9 @@ public enum Spec {
     /// Calibration symbols 4-7: greys at levels 0...3.
     public static let calibration: [Int] = [0, 21, 42, 63]
 
-    public static let headerSymbols = 12          // marker, calibration, version, sequence, flags
-    public static let checksumFirst = 8           // version
-    public static let checksumLast = 371          // last slot record symbol
+    public static let headerSymbols = 12  // marker, calibration, version, sequence, flags
+    public static let checksumFirst = 8  // version
+    public static let checksumLast = 371  // last slot record symbol
 
     /// Buttons mirrored per bar (1-5).
     public static let barButtons = [12, 12, 12, 12, 12]
@@ -38,7 +38,8 @@ public enum Spec {
 
     /// Fletcher-style checksum over symbols[from...to].
     public static func checksum(_ symbols: [Int], from: Int, to: Int) -> (Int, Int) {
-        var a = 0, b = 0
+        var a = 0
+        var b = 0
         for i in from...to {
             a = (a + symbols[i]) % 64
             b = (b + a) % 64
