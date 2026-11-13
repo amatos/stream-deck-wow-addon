@@ -55,6 +55,20 @@ import Testing
         #expect(reader.readCell(img, 0) == 8)
     }
 
+    @Test func toleratesTwoPixelsButNotThree() throws {
+        #expect(CountReader.tolerance(area: 21) == 2)
+        #expect(CountReader.tolerance(area: 100) == 5)
+        let base = Render.image(frame(counted: 1), counts: [7])
+        let reader = try #require(CountReader(base, g))
+        let top = Spec.countAreaY + Spec.countLineHeight + 2
+        var two = base
+        two.set(0, top + 4, (255, 255, 255)); two.set(2, top + 4, (255, 255, 255))  // 7's bottom row widened
+        #expect(reader.readCell(two, 0) == 7)
+        var three = two
+        three.set(0, top + 2, (255, 255, 255))
+        #expect(reader.readCell(three, 0) == nil)
+    }
+
     @Test func rejectsTooManyGlyphs() throws {
         var img = Render.image(frame(counted: 1), counts: [nil])
         // Eight 1-wide glyphs fit in a 32 px cell.

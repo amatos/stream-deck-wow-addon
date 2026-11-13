@@ -56,6 +56,9 @@ public struct CountReader {
         return out
     }
 
+    /// Pixels a glyph may differ from its template (§7): 2, or 5% of the glyph area if larger.
+    static func tolerance(area: Int) -> Int { max(2, area / 20) }
+
     /// Best matching digit, allowing a few differing pixels; nil when nothing is close.
     public func match(_ glyph: Glyph) -> Int? {
         var best: Int?
@@ -68,7 +71,7 @@ public struct CountReader {
             if miss < bestMiss { best = digit; bestMiss = miss }
         }
         let area = glyph.width * (glyph.columns.first?.count ?? 0)
-        guard let digit = best, bestMiss <= max(1, area / 20) else { return nil }
+        guard let digit = best, bestMiss <= Self.tolerance(area: area) else { return nil }
         return digit
     }
 

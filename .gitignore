@@ -24,3 +24,6 @@ helper/build/
 plugin/cc.matos.streamdeck.wowbars.sdPlugin/bin/
 plugin/cc.matos.streamdeck.wowbars.sdPlugin/logs/
 plugin/cc.matos.streamdeck.wowbars.sdPlugin/ui/inspector.js
+
+# SwiftPM / Xcode workspace state
+helper/.swiftpm/

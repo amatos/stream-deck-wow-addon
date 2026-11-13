@@ -35,7 +35,7 @@ import Testing
         #expect(s.count == Spec.symbolCount)
         #expect(Array(s[0..<4]) == Spec.marker)
         #expect(Array(s[4..<8]) == Spec.calibration)
-        #expect(s[8] == 4)
+        #expect(s[8] == 5)
         #expect(s[9] == 0 && s[10] == 1)       // 4097 wraps to 1
         #expect(s[11] == 1)
         let (a, b) = Spec.checksum(s, from: 8, to: 371)

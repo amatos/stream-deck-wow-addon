@@ -1,6 +1,6 @@
-# Strip Format — version 4
+# Strip Format — version 5
 
-Version 4 shrinks blocks to 1 px (version 3 used 4 px) and narrows the count area, so the whole strip is about 100 × 30 px. It mirrors bars 1–5 in 60 slot records.
+Version 5 draws counts in 7 px Friz Quadrata (version 4 used 12 px Arial Narrow), so the whole strip is 54 × 21 px plus 7 px per line of counts. Blocks are 1 px (since version 4) and the strip mirrors bars 1–5 in 60 slot records (since version 3).
 
 Single source of truth for how the addon encodes action-bar state on screen and how the helper decodes it. The addon, helper and their tests all follow this document. Any change to the layout bumps the version.
 
@@ -48,7 +48,7 @@ Symbols 4–7, fixed greys at levels 0, 1, 2, 3 (`(0,0,0)`, `(1,1,1)`, `(2,2,2)`
 |---|---|---|
 | 0–3 | 4 | Marker (§3.1) |
 | 4–7 | 4 | Calibration (§3.2) |
-| 8 | 1 | Format version = `4` |
+| 8 | 1 | Format version = `5` |
 | 9–10 | 2 | Sequence number, 12 bits, big-endian (symbol 9 = high 6 bits). Increments on every redraw, wraps at 4096. |
 | 11 | 1 | Global flags (§4.1) |
 | 12–371 | 360 | 60 slot records × 6 symbols (§5) |
@@ -112,11 +112,11 @@ The decoder discards any frame whose checksum does not match (for example a fram
 
 Counts can be secret in combat, so they are drawn as text rather than encoded.
 
-- **Position.** Starts 2 px below the bottom of the data grid, left-aligned with it; 96 px wide.
-- **Font.** `Fonts\ARIALN.TTF`, 12 px, flags `MONOCHROME` (no anti-aliasing), white `(255,255,255)` on black. Glyphs are therefore pixel-exact and repeatable.
+- **Position.** Starts 2 px below the bottom of the data grid, left-aligned with it; 50 px wide.
+- **Font.** `Fonts\FRIZQT__.TTF`, 7 px, flags `MONOCHROME` (no anti-aliasing), white `(255,255,255)` on black. Glyphs are therefore pixel-exact and repeatable. Measured in game: at 7 px the digits are 5 px tall, 1–4 px wide, always separated by a blank column, and the two most similar digits differ by 5 px; repeated lines render identically. 6 px merges neighbouring digits, and Arial Narrow keeps only 1–2 px between some digits at 7–10 px.
 - **Reference line.** The first line shows the fixed string `0123456789`. The decoder segments it into ten glyph templates at runtime, so it does not depend on font rendering details or resolution.
-- **Count cells.** Following lines contain one cell per slot whose *has count* bit is set, in slot order. The k-th cell belongs to the k-th slot with that bit set. Cells are 32 px wide, 3 per line, left-aligned text, line height 14 px.
-- **Decoding.** Within a cell, the decoder splits glyphs on empty pixel columns and matches each against the templates. An empty cell, or one that fails to match, is treated as "count unknown" and the last good value is kept.
+- **Count cells.** Following lines contain one cell per slot whose *has count* bit is set, in slot order. The k-th cell belongs to the k-th slot with that bit set. Cells are 25 px wide (room for 5 digits), 2 per line, left-aligned text, line height 7 px.
+- **Decoding.** Within a cell, the decoder splits glyphs on empty pixel columns and matches each against the templates, accepting the closest template that differs by at most 2 px (or 5% of the glyph area, if larger). An empty cell, or one that fails to match, is treated as "count unknown" and the last good value is kept.
 - **Cell count.** Lines only exist for the cells needed, so the area is just the reference line when no slot has a count.
 
 ## 8. Redraw
@@ -156,7 +156,7 @@ The addon applies these as priority override bindings. The helper sends the same
 | 4 | none | none |
 | 5 | `META-` | Command |
 
-Bar 4 uses the bare keypad keys: the user has no physical keypad, so they cannot be pressed by accident. Bar 5 uses Command, the only modifier left that WoW does not use for self-cast or other modified clicks.
+Bar 4 uses the bare keypad keys: the user has no physical keypad, so they cannot be pressed by accident. Bar 5 uses Command, the only modifier left that WoW does not use for self-cast or other modified clicks. Verified in game: WoW on macOS accepts Command as `META` for bar 5.
 
 Verified in game: WoW on macOS maps `CTRL` to the Control key. The helper sends each key as modifier-down, key-down, key-up, modifier-up events posted directly to the WoW process, with the numeric-pad flag set on the key events.
 
@@ -165,5 +165,8 @@ Verified in game: WoW on macOS maps `CTRL` to the Control key. The helper sends 
 1. ~~`FontString:SetText` accepts a secret count (§8).~~ Verified.
 2. ~~`CTRL` modifier mapping on macOS (§9).~~ Verified: Control key; all three bars fire.
 3. Proc glow detection returns `true` while a glow is showing (§5.2 bit 8). Needs a proc ability.
+4. ~~`META` (Command) bindings for bar 5 (§9).~~ Verified: bar 5 fires.
+5. ~~1 px blocks decode in game (§2).~~ Verified: the helper connects at block pitch 1.0.
+6. ~~7 px Friz Quadrata counts read correctly (§7).~~ Verified in game.
 
 Also verified in game (version 1): the grid renders pixel-exact at 4 px blocks with exact level values, and the count digits render as pure black and white glyphs matching the reference line.

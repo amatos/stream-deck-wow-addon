@@ -77,9 +77,9 @@ import Testing
 
     @Test func rejectsAnUnknownVersion() {
         var symbols = StripFrame.sample().symbols
-        symbols[8] = 5
+        symbols[8] = 6
         let g = StripGeometry(originX: 0, originY: 0, pitch: 1)
-        #expect(StripDecoder.decodeGrid(Render.image(symbols: symbols), g) == .failure(.badVersion(5)))
+        #expect(StripDecoder.decodeGrid(Render.image(symbols: symbols), g) == .failure(.badVersion(6)))
     }
 
     @Test func rejectsAWrongMarker() {
