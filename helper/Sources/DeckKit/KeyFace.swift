@@ -46,8 +46,9 @@ public enum KeyRenderer {
     /// Renders a face. `icon` is the slot's icon image, if loaded.
     public static func render(_ face: KeyFace, icon: CGImage?) -> CGImage {
         let s = CGFloat(size)
-        let ctx = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
-                            space: srgb, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        let ctx = CGContext(
+            data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
+            space: srgb, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
         let rect = CGRect(x: 0, y: 0, width: s, height: s)
         ctx.setFillColor(CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 1))
         ctx.fill(rect)
@@ -89,9 +90,12 @@ public enum KeyRenderer {
     }
 
     static func greyscale(_ image: CGImage) -> CGImage? {
-        let w = image.width, h = image.height
-        guard let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w,
-                                  space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue)
+        let w = image.width
+        let h = image.height
+        guard
+            let ctx = CGContext(
+                data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w,
+                space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue)
         else { return nil }
         ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
         return ctx.makeImage()

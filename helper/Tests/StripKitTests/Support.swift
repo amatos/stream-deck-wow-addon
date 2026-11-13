@@ -1,6 +1,7 @@
+import CoreGraphics
 import Foundation
 import ImageIO
-import CoreGraphics
+
 @testable import StripKit
 
 /// Renders frames into images the way the addon draws them, for decoder tests.
@@ -9,26 +10,26 @@ enum Render {
 
     /// 3x5 test glyphs, one string per row; the decoder learns them from the reference line.
     static let font: [[String]] = [
-        ["###", "#.#", "#.#", "#.#", "###"], // 0
-        [".#.", "##.", ".#.", ".#.", "###"], // 1
-        ["###", "..#", "###", "#..", "###"], // 2
-        ["###", "..#", ".##", "..#", "###"], // 3
-        ["#.#", "#.#", "###", "..#", "..#"], // 4
-        ["###", "#..", "###", "..#", "##."], // 5
-        ["###", "#..", "###", "#.#", "###"], // 6
-        ["###", "..#", ".#.", ".#.", ".#."], // 7
-        ["###", "#.#", "###", "#.#", "###"], // 8
-        ["###", "#.#", "###", "..#", "###"], // 9
+        ["###", "#.#", "#.#", "#.#", "###"],  // 0
+        [".#.", "##.", ".#.", ".#.", "###"],  // 1
+        ["###", "..#", "###", "#..", "###"],  // 2
+        ["###", "..#", ".##", "..#", "###"],  // 3
+        ["#.#", "#.#", "###", "..#", "..#"],  // 4
+        ["###", "#..", "###", "..#", "##."],  // 5
+        ["###", "#..", "###", "#.#", "###"],  // 6
+        ["###", "..#", ".#.", ".#.", ".#."],  // 7
+        ["###", "#.#", "###", "#.#", "###"],  // 8
+        ["###", "#.#", "###", "..#", "###"],  // 9
     ]
 
     struct Options {
         var originX = 0
         var originY = 0
-        var scale = 1                       // integer pixel scale (pitch = 4 * scale)
+        var scale = 1  // integer pixel scale (pitch = 4 * scale)
         var width = 320
         var height = 160
         var background = (12, 14, 20)
-        var colour: (Int) -> Int = { $0 }   // per-channel distortion
+        var colour: (Int) -> Int = { $0 }  // per-channel distortion
         var drawReference = true
     }
 
@@ -40,25 +41,29 @@ enum Render {
         var img = RGBImage(width: o.width, height: o.height, fill: o.background)
         let pitch = Spec.block * o.scale
         // Grid background and blocks.
-        img.fill(x: o.originX, y: o.originY, w: Spec.gridPixelWidth * o.scale,
-                 h: Spec.gridRows * pitch, (0, 0, 0))
+        img.fill(
+            x: o.originX, y: o.originY, w: Spec.gridPixelWidth * o.scale,
+            h: Spec.gridRows * pitch, (0, 0, 0))
         for (i, s) in symbols.enumerated() {
             let (r, g, b) = Spec.levels(of: s)
             let c = (o.colour(levels[r]), o.colour(levels[g]), o.colour(levels[b]))
-            img.fill(x: o.originX + (i % Spec.width) * pitch, y: o.originY + (i / Spec.width) * pitch,
-                     w: pitch, h: pitch, c)
+            img.fill(
+                x: o.originX + (i % Spec.width) * pitch, y: o.originY + (i / Spec.width) * pitch,
+                w: pitch, h: pitch, c)
         }
         // Count area background: reference line plus count lines.
         let lines = 1 + (counts.count + Spec.countCellsPerLine - 1) / Spec.countCellsPerLine
-        img.fill(x: o.originX, y: o.originY + Spec.countAreaY * o.scale,
-                 w: Spec.countAreaWidth * o.scale, h: lines * Spec.countLineHeight * o.scale, (0, 0, 0))
+        img.fill(
+            x: o.originX, y: o.originY + Spec.countAreaY * o.scale,
+            w: Spec.countAreaWidth * o.scale, h: lines * Spec.countLineHeight * o.scale, (0, 0, 0))
         if o.drawReference {
             text(&img, "0123456789", x: 0, line: 0, o)
         }
         for (k, count) in counts.enumerated() {
             guard let count else { continue }
-            text(&img, String(count), x: (k % Spec.countCellsPerLine) * Spec.countCellWidth,
-                 line: 1 + k / Spec.countCellsPerLine, o)
+            text(
+                &img, String(count), x: (k % Spec.countCellsPerLine) * Spec.countCellWidth,
+                line: 1 + k / Spec.countCellsPerLine, o)
         }
         return img
     }
@@ -77,8 +82,9 @@ enum Render {
     static func glyph(_ img: inout RGBImage, _ rows: [String], x: Int, y: Int, _ o: Options) {
         for (ry, row) in rows.enumerated() {
             for (rx, ch) in row.enumerated() where ch == "#" {
-                img.fill(x: o.originX + (x + rx) * o.scale, y: o.originY + (y + ry) * o.scale,
-                         w: o.scale, h: o.scale, (255, 255, 255))
+                img.fill(
+                    x: o.originX + (x + rx) * o.scale, y: o.originY + (y + ry) * o.scale,
+                    w: o.scale, h: o.scale, (255, 255, 255))
             }
         }
     }
@@ -92,11 +98,13 @@ enum Fixtures {
     static func png(_ name: String) -> RGBImage {
         let src = CGImageSourceCreateWithURL(url(name) as CFURL, nil)!
         let cg = CGImageSourceCreateImageAtIndex(src, 0, nil)!
-        let w = cg.width, h = cg.height
+        let w = cg.width
+        let h = cg.height
         var rgba = [UInt8](repeating: 0, count: w * h * 4)
-        let ctx = CGContext(data: &rgba, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
-                            space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        let ctx = CGContext(
+            data: &rgba, width: w, height: h, bitsPerComponent: 8, bytesPerRow: w * 4,
+            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
         ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
         var img = RGBImage(width: w, height: h)
         for y in 0..<h {
@@ -130,7 +138,11 @@ extension StripFrame {
         slots[0] = SlotState(iconID: 136048, hasAction: true, usable: true)
         slots[4] = SlotState(iconID: 135820, hasAction: true, noMana: true, glow: true)
         slots[30] = SlotState(iconID: 1, hasAction: true, rangeApplies: true, inRange: false)
-        for i in counted { slots[i].hasAction = true; slots[i].iconID = 1000 + i; slots[i].hasCount = true }
+        for i in counted {
+            slots[i].hasAction = true
+            slots[i].iconID = 1000 + i
+            slots[i].hasCount = true
+        }
         return StripFrame(sequence: sequence, flags: GlobalFlags(bindingsApplied: true), slots: slots)
     }
 }

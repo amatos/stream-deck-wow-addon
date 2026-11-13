@@ -85,8 +85,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     static func menuBarImage() -> NSImage {
         let image = NSImage(size: NSSize(width: 22, height: 18), flipped: false) { rect in
             guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
-            Emblem.drawMono(in: ctx, rect: rect.insetBy(dx: 1, dy: 0),
-                            colour: CGColor(gray: 0, alpha: 1), gap: 1)
+            Emblem.drawMono(
+                in: ctx, rect: rect.insetBy(dx: 1, dy: 0),
+                colour: CGColor(gray: 0, alpha: 1), gap: 1)
             return true
         }
         image.isTemplate = true

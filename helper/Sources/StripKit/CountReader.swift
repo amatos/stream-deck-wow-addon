@@ -7,7 +7,7 @@ public struct CountReader {
         public var width: Int { columns.count }
     }
 
-    public let templates: [Glyph]   // index = digit
+    public let templates: [Glyph]  // index = digit
     let geometry: StripGeometry
 
     /// Learns templates from the reference line. Nil when it does not hold exactly 10 glyphs.
@@ -41,7 +41,8 @@ public struct CountReader {
     static func glyphs<P: PixelSource>(_ img: P, _ r: Rect) -> [Glyph] {
         var out: [Glyph] = []
         var current: [[Bool]] = []
-        let x1 = min(r.x + r.w, img.width), y1 = min(r.y + r.h, img.height)
+        let x1 = min(r.x + r.w, img.width)
+        let y1 = min(r.y + r.h, img.height)
         guard r.x >= 0, r.y >= 0, x1 > r.x, y1 > r.y else { return [] }
         for x in r.x..<x1 {
             let column = (r.y..<y1).map { ink(img.rgb(x, $0)) }
@@ -68,7 +69,10 @@ public struct CountReader {
             for (a, b) in zip(t.columns, glyph.columns) {
                 for (p, q) in zip(a, b) where p != q { miss += 1 }
             }
-            if miss < bestMiss { best = digit; bestMiss = miss }
+            if miss < bestMiss {
+                best = digit
+                bestMiss = miss
+            }
         }
         let area = glyph.width * (glyph.columns.first?.count ?? 0)
         guard let digit = best, bestMiss <= Self.tolerance(area: area) else { return nil }

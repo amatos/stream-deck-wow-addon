@@ -30,7 +30,7 @@ public struct BGRAPixels: PixelSource {
 public struct RGBImage: PixelSource {
     public let width: Int
     public let height: Int
-    public var pixels: [UInt8]   // r, g, b per pixel
+    public var pixels: [UInt8]  // r, g, b per pixel
 
     public init(width: Int, height: Int, fill: (Int, Int, Int) = (0, 0, 0)) {
         self.width = width

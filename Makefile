@@ -1,29 +1,53 @@
 WOW_ADDONS ?= /Applications/World of Warcraft/_forever_/Interface/AddOns
 
-.PHONY: addon-test addon-install
+.PHONY: addon-test addon-lint addon-install lint
 
-# busted and luacov come from the Nix dev shell (`nix develop`).
+# Minimum line coverage, in percent, that addon-test, helper-test and plugin-test enforce.
+COVERAGE_MIN ?= 80
+
+# Fails unless coverage $(1) (a percentage) is at least COVERAGE_MIN; $(2) names the component.
+check_coverage = awk -v c="$(1)" -v min="$(COVERAGE_MIN)" -v name="$(2)" 'BEGIN { \
+	if (c == "" || c + 0 < min + 0) { printf "%s line coverage %s%% is below %s%%\n", name, c, min; exit 1 } \
+	printf "%s line coverage %s%% (minimum %s%%)\n", name, c, min }'
+
+# busted, luacov and luacheck come from the Nix dev shell (`nix develop`).
 addon-test:
 	cd addon && rm -f luacov.stats.out luacov.report.out \
 		&& busted --coverage && luacov \
 		&& sed -n '/^Summary/,$$p' luacov.report.out
+	@$(call check_coverage,$$(awk '/^Total/ { sub("%", "", $$4); print $$4 }' addon/luacov.report.out),Addon)
+
+# Settings, including the WoW API globals the addon may use, are in addon/.luacheckrc.
+addon-lint:
+	cd addon && luacheck StreamDeckBars spec
+
+lint: addon-lint helper-lint
 
 # Copies the addon into the WoW Forever AddOns folder.
 addon-install:
 	mkdir -p "$(WOW_ADDONS)"
 	rsync -a --delete addon/StreamDeckBars/ "$(WOW_ADDONS)/StreamDeckBars/"
 
-.PHONY: helper-test helper-app helper-run fixtures
+.PHONY: helper-test helper-lint helper-app helper-run fixtures fixtures-check
 
 HELPER_TEST_BINS = helper/.build/debug/StripKitTests.xctest/Contents/MacOS/StripKitTests \
 	-object helper/.build/debug/IconKitTests.xctest/Contents/MacOS/IconKitTests \
 	-object helper/.build/debug/DeckKitTests.xctest/Contents/MacOS/DeckKitTests
 
+HELPER_COV_REPORT = xcrun llvm-cov report $(HELPER_TEST_BINS) -instr-profile helper/.build/debug/codecov/default.profdata \
+	-ignore-filename-regex '(Tests|WoWBarsHelper|Vendor|\.build)/'
+
 # Runs the helper's tests and reports StripKit, IconKit and DeckKit line coverage.
 helper-test:
 	cd helper && swift test --enable-code-coverage
-	xcrun llvm-cov report $(HELPER_TEST_BINS) -instr-profile helper/.build/debug/codecov/default.profdata \
-		-ignore-filename-regex '(Tests|WoWBarsHelper|Vendor|\.build)/'
+	$(HELPER_COV_REPORT)
+	@$(call check_coverage,$$($(HELPER_COV_REPORT) | awk '/^TOTAL/ { sub("%", "", $$10); print $$10 }'),Helper)
+
+# Style settings are in .swift-format. Fix findings with `swift format -i -r -p $(SWIFT_SOURCES)`.
+SWIFT_SOURCES = helper/Package.swift helper/Sources helper/Tests tools/app-icon.swift tools/plugin-images.swift
+
+helper-lint:
+	swift format lint --strict -r -p $(SWIFT_SOURCES)
 
 # A stable identity keeps macOS permissions across rebuilds. Override with
 # `make helper-app SIGN_IDENTITY=-` for ad-hoc signing. WoWBarsHelper.xcodeproj
@@ -53,22 +77,31 @@ helper-run: helper-app
 fixtures:
 	luajit tools/lua-fixture.lua > helper/Tests/StripKitTests/Fixtures/lua-frame.json
 
-.PHONY: plugin-test plugin-build plugin-install
+# Fails if the committed fixture no longer matches what the addon's encoder produces.
+fixtures-check: fixtures
+	@git diff --exit-code -- helper/Tests/StripKitTests/Fixtures/lua-frame.json \
+		|| { echo "lua-frame.json is out of date; run make fixtures and commit it"; exit 1; }
+
+.PHONY: plugin-test plugin-build plugin-validate plugin-install
 
 SD_PLUGINS = $(HOME)/Library/Application Support/com.elgato.StreamDeck/Plugins
 PLUGIN_DIR = plugin/cc.matos.streamdeck.wowbars.sdPlugin
 
 plugin-test:
-	cd plugin && npx tsc --noEmit && npx vitest run --coverage
+	cd plugin && npx tsc --noEmit && npx vitest run --coverage --coverage.thresholds.lines=$(COVERAGE_MIN)
 
 plugin-build:
 	cd plugin && npm run build
+
+# Checks manifest.json against Elgato's schema. Needs the build, since it checks that CodePath exists.
+plugin-validate: plugin-build
+	cd plugin && npx streamdeck validate --no-update-check $(notdir $(PLUGIN_DIR))
 
 # Links the plugin folder into Stream Deck (restart the Stream Deck app afterwards).
 plugin-install: plugin-build
 	ln -sfn "$(CURDIR)/$(PLUGIN_DIR)" "$(SD_PLUGINS)/cc.matos.streamdeck.wowbars.sdPlugin"
 
-.PHONY: dist dist-check dist-addon dist-plugin dist-helper set-version
+.PHONY: dist dist-check version-check dist-addon dist-plugin dist-helper set-version
 
 # VERSION is the single source of the release version. Change it with `make set-version V=x.y.z`.
 VERSION := $(shell cat VERSION)
@@ -85,10 +118,14 @@ DIST_APP = helper/build/dist/WoW Bars Helper.app
 dist: dist-check dist-addon dist-plugin dist-helper
 	@ls -1 "$(DIST)"
 
-# Fails unless the addon, plugin manifest and working tree agree on what's being released.
-dist-check:
-	@grep -qx '\#\# Version: $(VERSION)' $(TOC) && grep -q '"Version": "$(VERSION).0"' $(PLUGIN_DIR)/manifest.json \
+# Fails unless the addon .toc and plugin manifest match VERSION.
+version-check:
+	@grep -qx '## Version: $(VERSION)' $(TOC) && grep -q '"Version": "$(VERSION).0"' $(PLUGIN_DIR)/manifest.json \
 		|| { echo "Versions don't match VERSION ($(VERSION)); run make set-version V=$(VERSION)"; exit 1; }
+	@echo "Versions match $(VERSION)"
+
+# Fails unless the addon, plugin manifest and working tree agree on what's being released.
+dist-check: version-check
 	@git diff --quiet HEAD -- addon helper plugin \
 		|| echo "warning: addon/, helper/ or plugin/ has uncommitted changes"
 	@rm -rf "$(DIST)" && mkdir -p "$(DIST)"

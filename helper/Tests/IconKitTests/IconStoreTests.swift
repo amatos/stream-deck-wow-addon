@@ -1,14 +1,15 @@
 import Foundation
 import ImageIO
 import Testing
+
 @testable import IconKit
 
 @Suite struct BuildInfoTests {
     let sample = """
-    Branch!STRING:0|Active!DEC:1|Build Key!HEX:16|Version!STRING:0|Product!STRING:0
-    us|0|aaa|1.15.7.1|wow_classic_era
-    us|1|bbb|1.60.1.70888|wowf
-    """
+        Branch!STRING:0|Active!DEC:1|Build Key!HEX:16|Version!STRING:0|Product!STRING:0
+        us|0|aaa|1.15.7.1|wow_classic_era
+        us|1|bbb|1.60.1.70888|wowf
+        """
 
     @Test func parsesRowsByColumnName() {
         let rows = BuildInfo.parse(sample)
@@ -55,17 +56,22 @@ import Testing
     let install = WoWInstall(root: URL(fileURLWithPath: "/nonexistent"), product: "wowf", version: "1.2.3")
 
     func rawBLP() -> Data {
-        BLPFile.make(compression: 3, alphaDepth: 8, alphaType: 0, width: 2, height: 2,
-                     mip: [UInt8](repeating: 200, count: 16))
+        BLPFile.make(
+            compression: 3, alphaDepth: 8, alphaType: 0, width: 2, height: 2,
+            mip: [UInt8](repeating: 200, count: 16))
     }
 
     @Test func extractsCachesAndReusesIcons() throws {
         let cache = tempDir()
         defer { try? FileManager.default.removeItem(at: cache) }
-        var opens = 0, reads = 0
+        var opens = 0
+        var reads = 0
         let store = IconStore(install: install, cacheRoot: cache) { _ in
             opens += 1
-            return { _ in reads += 1; return rawBLP() }
+            return { _ in
+                reads += 1
+                return rawBLP()
+            }
         }
         let url = try #require(store.png(for: 42))
         #expect(url.lastPathComponent == "42.png")
@@ -85,7 +91,10 @@ import Testing
         defer { try? FileManager.default.removeItem(at: cache) }
         var reads = 0
         let store = IconStore(install: install, cacheRoot: cache) { _ in
-            { _ in reads += 1; return Data("nope".utf8) }
+            { _ in
+                reads += 1
+                return Data("nope".utf8)
+            }
         }
         #expect(store.png(for: 7) == nil)
         #expect(store.png(for: 7) == nil)

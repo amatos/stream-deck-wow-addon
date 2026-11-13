@@ -40,7 +40,7 @@ function Strip.create(position)
 
   -- Everything sits inside a black padding border (docs/strip-format.md §2).
   local pad = E.PADDING
-  local gridW, gridH = E.gridSize()
+  local gridW = E.gridSize()
   local areaX, areaY = E.countAreaOffset()
   areaX, areaY = areaX + pad, areaY + pad
 

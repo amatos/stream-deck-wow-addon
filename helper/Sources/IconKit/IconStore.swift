@@ -42,14 +42,17 @@ public final class IconStore: @unchecked Sendable {
     private let openStorage: (WoWInstall) throws -> (UInt32) throws -> Data
 
     /// `cacheRoot` holds one subfolder per client version.
-    public init(install: WoWInstall, cacheRoot: URL,
-                reader: ((WoWInstall) throws -> (UInt32) throws -> Data)? = nil) {
+    public init(
+        install: WoWInstall, cacheRoot: URL,
+        reader: ((WoWInstall) throws -> (UInt32) throws -> Data)? = nil
+    ) {
         self.install = install
         directory = cacheRoot.appendingPathComponent("\(install.product)-\(install.version)", isDirectory: true)
-        openStorage = reader ?? { install in
-            let storage = try CascStorage(path: install.storagePath)
-            return { try storage.read(fileDataID: $0) }
-        }
+        openStorage =
+            reader ?? { install in
+                let storage = try CascStorage(path: install.storagePath)
+                return { try storage.read(fileDataID: $0) }
+            }
     }
 
     private var readFile: ((UInt32) throws -> Data)?
@@ -97,7 +100,7 @@ public enum PNG {
 
     public static func write(_ image: RGBAImage, to url: URL) throws {
         guard let cg = cgImage(image),
-              let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil)
+            let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil)
         else { throw WriteError() }
         CGImageDestinationAddImage(dest, cg, nil)
         guard CGImageDestinationFinalize(dest) else { throw WriteError() }

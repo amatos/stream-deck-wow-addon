@@ -32,6 +32,7 @@ WoW addons cannot talk to other programs, so data moves through the screen and t
 | [`docs/strip-format.md`](docs/strip-format.md)                                                | Spec of the on-screen strip and the keybinds. It's the source of truth for both the addon and the helper.                        |
 | [`docs/deck-protocol.md`](docs/deck-protocol.md)                                              | Spec of the helper ↔ plugin WebSocket protocol.                                                                                  |
 | [`tools/`](tools)                                                                             | Scripts that generate the icons, test fixtures and Stream Deck profiles.                                                         |
+| [`.github/`](.github)                                                                         | CI workflow (`workflows/ci.yml`) and Dependabot config.                                                                          |
 | [`Makefile`](Makefile)                                                                        | Entry point for building, testing and installing everything.                                                                     |
 | [`WoWBarsHelper.xcodeproj`](WoWBarsHelper.xcodeproj)                                          | Xcode wrapper that builds the helper app through `make` (see [Xcode](#building-from-xcode)).                                     |
 
@@ -76,10 +77,12 @@ Extracted icons are cached in `~/Library/Caches/cc.matos.streamdeck.wowbars.help
 | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Helper      | macOS 15+, Xcode / Swift 6 toolchain, and a code-signing identity in your keychain (see [Signing](#signing-the-helper)). |
 | Plugin      | Node.js 24 and npm. Stream Deck app 7.1+.                                                                                |
-| Addon tests | LuaJIT with busted and luacov.                                                                                           |
+| Addon tests | LuaJIT with busted, luacov and luacheck.                                                                                 |
 | Running it  | World of Warcraft with render scale at 100%. The strip uses 1 px blocks and must be captured 1:1.                        |
 
-The Nix flake provides Node.js 24, LuaJIT with busted and luacov, and Python. Enter it with `nix develop`, or run `direnv allow` once to load it automatically. Xcode isn't provided by the flake: the shell uses the system Xcode for `swift`, `xcrun` and `codesign`.
+The Nix flake provides Node.js 24, LuaJIT with busted, luacov and luacheck, and Python. Enter it with `nix develop`, or run `direnv allow` once to load it automatically. Xcode isn't provided by the flake: the shell uses the system Xcode for `swift`, `xcrun` and `codesign`.
+
+The flake also has a shell for NixOS and other Linux (x86_64 and aarch64). There you can work on the addon and the plugin: the `addon-*`, `fixtures`, `fixtures-check`, `version-check` and `plugin-*` targets work, but the helper and `make dist` need macOS.
 
 > [!NOTE]
 > **Without Nix**, install Xcode from the App Store, then the rest with Homebrew and LuaRocks:
@@ -88,9 +91,10 @@ The Nix flake provides Node.js 24, LuaJIT with busted and luacov, and Python. En
 > brew install node@24 luajit luarocks python
 > luarocks --lua-version 5.1 --local install busted LUA_INCDIR="$(brew --prefix luajit)/include/luajit-2.1"
 > luarocks --lua-version 5.1 --local install luacov
+> luarocks --lua-version 5.1 --local install luacheck
 > ```
 >
-> `node@24` is keg-only, and `make addon-test` expects `busted` and `luacov` on your `PATH`, so add this to your shell profile:
+> `node@24` is keg-only, and `make addon-test` and `make addon-lint` expect `busted`, `luacov` and `luacheck` on your `PATH`, so add this to your shell profile:
 >
 > ```bash
 > export PATH="$(brew --prefix node@24)/bin:$PATH"
@@ -251,6 +255,17 @@ make plugin-test
 ```
 
 `lua-frame.json` is produced by the addon's encoder and decoded by the helper's tests, so the two sides can't drift apart on the strip format.
+
+Each test target fails if line coverage drops below `COVERAGE_MIN` (default 80%). The other checks are:
+
+| Command                | Checks                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `make lint`            | `luacheck` on the addon (`addon/.luacheckrc`) and `swift format lint` on the Swift code (`.swift-format`).        |
+| `make fixtures-check`  | The committed `lua-frame.json` still matches the addon's encoder.                                                |
+| `make version-check`   | The addon `.toc` and the plugin manifest match `VERSION`.                                                        |
+| `make plugin-validate` | Builds the plugin and validates its manifest with Elgato's CLI.                                                  |
+
+GitHub Actions runs all of these on every push to `main` and every pull request (`.github/workflows/ci.yml`): the addon and plugin jobs on Ubuntu, and the helper job on the `xcode-27` macOS runner, so CI's swift-format matches Xcode 27's. Fix Swift lint findings with `swift format -i -r -p` on the paths `make helper-lint` prints. Dependabot keeps the plugin's npm packages and the workflow's actions up to date.
 
 ## Using it in game
 

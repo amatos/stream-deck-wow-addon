@@ -11,8 +11,9 @@ try FileManager.default.createDirectory(at: out, withIntermediateDirectories: tr
 let srgb = CGColorSpace(name: CGColorSpace.sRGB)!
 
 func colour(_ hex: UInt32, _ a: CGFloat = 1) -> CGColor {
-    CGColor(srgbRed: CGFloat(hex >> 16 & 0xFF) / 255, green: CGFloat(hex >> 8 & 0xFF) / 255,
-            blue: CGFloat(hex & 0xFF) / 255, alpha: a)
+    CGColor(
+        srgbRed: CGFloat(hex >> 16 & 0xFF) / 255, green: CGFloat(hex >> 8 & 0xFF) / 255,
+        blue: CGFloat(hex & 0xFF) / 255, alpha: a)
 }
 
 func gradient(_ a: CGColor, _ b: CGColor) -> CGGradient {
@@ -32,9 +33,9 @@ func wPath(in r: CGRect) -> CGPath {
 }
 
 enum Style {
-    case full        // navy tile, dark keys, gold W (plugin icon)
-    case mono        // white W on transparent, split by the grid (category / action list icons)
-    case placeholder // black key, dim keys and W (default key image before the helper connects)
+    case full  // navy tile, dark keys, gold W (plugin icon)
+    case mono  // white W on transparent, split by the grid (category / action list icons)
+    case placeholder  // black key, dim keys and W (default key image before the helper connects)
 }
 
 /// Draws the 4 x 3 key grid with the W into a square of side `size` (in points of the context).
@@ -44,18 +45,22 @@ func emblem(_ ctx: CGContext, size: CGFloat, style: Style) {
     switch style {
     case .full:
         let body = CGPath(roundedRect: full, cornerWidth: size * 0.2, cornerHeight: size * 0.2, transform: nil)
-        ctx.saveGState(); ctx.addPath(body); ctx.clip()
+        ctx.saveGState()
+        ctx.addPath(body)
+        ctx.clip()
         ctx.drawLinearGradient(gradient(colour(0x1D2340), colour(0x090B15)), start: CGPoint(x: 0, y: size), end: .zero, options: [])
         ctx.restoreGState()
         inset = size * 0.12
     case .mono:
         inset = size * 0.02
     case .placeholder:
-        ctx.setFillColor(colour(0x000000)); ctx.fill(full)
+        ctx.setFillColor(colour(0x000000))
+        ctx.fill(full)
         inset = size * 0.18
     }
 
-    let cols = 4, rows = 3
+    let cols = 4
+    let rows = 3
     let area = full.insetBy(dx: inset, dy: inset)
     let gap = area.width * 0.035
     let tile = (area.width - CGFloat(cols - 1) * gap) / CGFloat(cols)
@@ -73,8 +78,11 @@ func emblem(_ ctx: CGContext, size: CGFloat, style: Style) {
     if style != .mono {
         let (top, bottom): (UInt32, UInt32) = style == .full ? (0x262C44, 0x161A2B) : (0x1A1D2A, 0x111320)
         for t in tiles {
-            ctx.saveGState(); ctx.addPath(t); ctx.clip()
-            ctx.drawLinearGradient(gradient(colour(top), colour(bottom)), start: CGPoint(x: 0, y: grid.maxY), end: CGPoint(x: 0, y: grid.minY), options: [])
+            ctx.saveGState()
+            ctx.addPath(t)
+            ctx.clip()
+            ctx.drawLinearGradient(
+                gradient(colour(top), colour(bottom)), start: CGPoint(x: 0, y: grid.maxY), end: CGPoint(x: 0, y: grid.minY), options: [])
             ctx.restoreGState()
         }
     }
@@ -87,11 +95,15 @@ func emblem(_ ctx: CGContext, size: CGFloat, style: Style) {
     ctx.clip()
     switch style {
     case .full:
-        ctx.drawLinearGradient(gradient(colour(0xFFE7A0), colour(0xC07A22)), start: CGPoint(x: 0, y: grid.maxY), end: CGPoint(x: 0, y: grid.minY), options: [])
+        ctx.drawLinearGradient(
+            gradient(colour(0xFFE7A0), colour(0xC07A22)), start: CGPoint(x: 0, y: grid.maxY), end: CGPoint(x: 0, y: grid.minY), options: [])
     case .mono:
-        ctx.setFillColor(colour(0xFFFFFF)); ctx.fill(full)
+        ctx.setFillColor(colour(0xFFFFFF))
+        ctx.fill(full)
     case .placeholder:
-        ctx.drawLinearGradient(gradient(colour(0xFFE7A0, 0.35), colour(0xC07A22, 0.35)), start: CGPoint(x: 0, y: grid.maxY), end: CGPoint(x: 0, y: grid.minY), options: [])
+        ctx.drawLinearGradient(
+            gradient(colour(0xFFE7A0, 0.35), colour(0xC07A22, 0.35)), start: CGPoint(x: 0, y: grid.maxY), end: CGPoint(x: 0, y: grid.minY),
+            options: [])
     }
     ctx.restoreGState()
 }
@@ -99,8 +111,9 @@ func emblem(_ ctx: CGContext, size: CGFloat, style: Style) {
 func image(_ name: String, size: Int, style: Style) {
     for scale in [1, 2] {
         let px = size * scale
-        let ctx = CGContext(data: nil, width: px, height: px, bitsPerComponent: 8, bytesPerRow: px * 4,
-                            space: srgb, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+        let ctx = CGContext(
+            data: nil, width: px, height: px, bitsPerComponent: 8, bytesPerRow: px * 4,
+            space: srgb, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
         emblem(ctx, size: CGFloat(px), style: style)
         let file = out.appendingPathComponent(scale == 1 ? "\(name).png" : "\(name)@2x.png")
         let dest = CGImageDestinationCreateWithURL(file as CFURL, UTType.png.identifier as CFString, 1, nil)!

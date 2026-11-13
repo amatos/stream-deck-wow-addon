@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /plugin
+    schedule:
+      interval: weekly
+    groups:
+      # One PR for all dev tooling; runtime dependencies (@elgato/streamdeck, ws) get their own.
+      dev-dependencies:
+        dependency-type: development
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

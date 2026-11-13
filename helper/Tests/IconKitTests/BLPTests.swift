@@ -1,11 +1,14 @@
 import Foundation
 import Testing
+
 @testable import IconKit
 
 /// Builds BLP2 files for tests.
 enum BLPFile {
-    static func make(compression: UInt8, alphaDepth: UInt8, alphaType: UInt8,
-                     width: Int, height: Int, palette: [UInt8] = [], mip: [UInt8]) -> Data {
+    static func make(
+        compression: UInt8, alphaDepth: UInt8, alphaType: UInt8,
+        width: Int, height: Int, palette: [UInt8] = [], mip: [UInt8]
+    ) -> Data {
         var b = [UInt8]("BLP2".utf8)
         b += le32(1)
         b += [compression, alphaDepth, alphaType, 0]
@@ -44,48 +47,60 @@ enum BLPFile {
 
     @Test func rejectsAMipPastTheEnd() {
         var bytes = [UInt8](BLPFile.make(compression: 3, alphaDepth: 8, alphaType: 0, width: 1, height: 1, mip: [1, 2, 3, 4]))
-        bytes[84] = 200   // mip size beyond the data
+        bytes[84] = 200  // mip size beyond the data
         #expect(throws: BLP.DecodeError.truncated) { try BLP.decode(Data(bytes)) }
     }
 
     @Test func rejectsUnknownFormats() {
         let jpeg = BLPFile.make(compression: 0, alphaDepth: 0, alphaType: 0, width: 1, height: 1, mip: [0])
         #expect(throws: BLP.DecodeError.unsupported(compression: 0, alphaType: 0)) { try BLP.decode(jpeg) }
-        let odd = BLPFile.make(compression: 2, alphaDepth: 8, alphaType: 3, width: 4, height: 4,
-                               mip: [UInt8](repeating: 0, count: 16))
+        let odd = BLPFile.make(
+            compression: 2, alphaDepth: 8, alphaType: 3, width: 4, height: 4,
+            mip: [UInt8](repeating: 0, count: 16))
         #expect(throws: BLP.DecodeError.unsupported(compression: 2, alphaType: 3)) { try BLP.decode(odd) }
     }
 
     @Test func decodesRawBGRA() throws {
-        let img = try BLP.decode(BLPFile.make(compression: 3, alphaDepth: 8, alphaType: 0, width: 2, height: 1,
-                                              mip: [10, 20, 30, 40, 1, 2, 3, 4]))
+        let img = try BLP.decode(
+            BLPFile.make(
+                compression: 3, alphaDepth: 8, alphaType: 0, width: 2, height: 1,
+                mip: [10, 20, 30, 40, 1, 2, 3, 4]))
         #expect(img.width == 2 && img.height == 1)
         #expect(img.pixel(0, 0) == [30, 20, 10, 40])
         #expect(img.pixel(1, 0) == [3, 2, 1, 4])
     }
 
     @Test func decodesPaletteWithEachAlphaDepth() throws {
-        let palette: [UInt8] = [255, 0, 0, 0, /* blue */ 0, 255, 0, 0 /* green */]
+        // BGRA: entry 0 is blue, entry 1 is green.
+        let palette: [UInt8] = [255, 0, 0, 0, 0, 255, 0, 0]
         let indices: [UInt8] = [0, 1, 1, 0]
 
-        let a8 = try BLP.decode(BLPFile.make(compression: 1, alphaDepth: 8, alphaType: 0, width: 2, height: 2,
-                                             palette: palette, mip: indices + [10, 20, 30, 40]))
+        let a8 = try BLP.decode(
+            BLPFile.make(
+                compression: 1, alphaDepth: 8, alphaType: 0, width: 2, height: 2,
+                palette: palette, mip: indices + [10, 20, 30, 40]))
         #expect(a8.pixel(0, 0) == [0, 0, 255, 10])
         #expect(a8.pixel(1, 0) == [0, 255, 0, 20])
 
-        let a4 = try BLP.decode(BLPFile.make(compression: 1, alphaDepth: 4, alphaType: 0, width: 2, height: 2,
-                                             palette: palette, mip: indices + [0xF1, 0x08]))
+        let a4 = try BLP.decode(
+            BLPFile.make(
+                compression: 1, alphaDepth: 4, alphaType: 0, width: 2, height: 2,
+                palette: palette, mip: indices + [0xF1, 0x08]))
         #expect(a4.pixel(0, 0)[3] == 17)
         #expect(a4.pixel(1, 0)[3] == 255)
         #expect(a4.pixel(0, 1)[3] == 136)
         #expect(a4.pixel(1, 1)[3] == 0)
 
-        let a1 = try BLP.decode(BLPFile.make(compression: 1, alphaDepth: 1, alphaType: 0, width: 2, height: 2,
-                                             palette: palette, mip: indices + [0b0101]))
+        let a1 = try BLP.decode(
+            BLPFile.make(
+                compression: 1, alphaDepth: 1, alphaType: 0, width: 2, height: 2,
+                palette: palette, mip: indices + [0b0101]))
         #expect(a1.pixels.enumerated().filter { $0.offset % 4 == 3 }.map(\.element) == [255, 0, 255, 0])
 
-        let a0 = try BLP.decode(BLPFile.make(compression: 1, alphaDepth: 0, alphaType: 0, width: 2, height: 2,
-                                             palette: palette, mip: indices))
+        let a0 = try BLP.decode(
+            BLPFile.make(
+                compression: 1, alphaDepth: 0, alphaType: 0, width: 2, height: 2,
+                palette: palette, mip: indices))
         #expect(a0.pixel(1, 1) == [0, 0, 255, 255])
     }
 
@@ -118,7 +133,7 @@ enum BLPFile {
 
     @Test func decodesDXT3ExplicitAlpha() throws {
         var alpha = [UInt8](repeating: 0xFF, count: 8)
-        alpha[0] = 0x50   // texel 0 = 0, texel 1 = 5
+        alpha[0] = 0x50  // texel 0 = 0, texel 1 = 5
         let block = alpha + colourBlock(red, blue, [Int](repeating: 1, count: 16))
         let img = try BLP.decode(BLPFile.make(compression: 2, alphaDepth: 8, alphaType: 1, width: 4, height: 4, mip: block))
         #expect(img.pixel(0, 0) == [0, 0, 255, 0])
@@ -135,7 +150,7 @@ enum BLPFile {
         let img = try BLP.decode(BLPFile.make(compression: 2, alphaDepth: 8, alphaType: 7, width: 4, height: 4, mip: block))
         #expect(img.pixel(0, 0)[3] == 210)
         #expect(img.pixel(1, 0)[3] == 70)
-        #expect(img.pixel(2, 0)[3] == 190)   // (6*210 + 1*70) / 7
+        #expect(img.pixel(2, 0)[3] == 190)  // (6*210 + 1*70) / 7
     }
 
     @Test func dxt5SixValueTableHasZeroAndFull() {
@@ -145,7 +160,7 @@ enum BLPFile {
         for k in 0..<6 { block.append(UInt8(bits >> UInt64(8 * k) & 0xFF)) }
         let a = BLP.dxt5Alpha(block, 0)
         #expect(a[0] == 0 && a[1] == 255)
-        #expect(a[2] == 60)   // (4*50 + 1*100) / 5
+        #expect(a[2] == 60)  // (4*50 + 1*100) / 5
     }
 
     @Test func clipsBlocksAtOddSizes() throws {

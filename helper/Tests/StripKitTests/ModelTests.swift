@@ -1,10 +1,12 @@
 import Testing
+
 @testable import StripKit
 
 @Suite struct ModelTests {
     @Test func slotRecordRoundTrips() {
-        let slot = SlotState(iconID: 136048, hasAction: true, usable: true, noMana: true, glow: true,
-                             rangeApplies: true, inRange: true, hasCount: true)
+        let slot = SlotState(
+            iconID: 136048, hasAction: true, usable: true, noMana: true, glow: true,
+            rangeApplies: true, inRange: true, hasCount: true)
         #expect(SlotState(record: slot.record[...]) == slot)
     }
 
@@ -36,7 +38,7 @@ import Testing
         #expect(Array(s[0..<4]) == Spec.marker)
         #expect(Array(s[4..<8]) == Spec.calibration)
         #expect(s[8] == 5)
-        #expect(s[9] == 0 && s[10] == 1)       // 4097 wraps to 1
+        #expect(s[9] == 0 && s[10] == 1)  // 4097 wraps to 1
         #expect(s[11] == 1)
         let (a, b) = Spec.checksum(s, from: 8, to: 371)
         #expect(s[372] == a && s[373] == b)
@@ -72,15 +74,16 @@ import Testing
     @Test func swiftEncodingMatchesLuaAddon() throws {
         let lua = try Fixtures.luaFrame()
         let slots = lua.slots.map {
-            SlotState(iconID: $0.icon, hasAction: $0.hasAction, usable: $0.usable, noMana: $0.noMana,
-                      glow: $0.glow, rangeApplies: $0.rangeApplies, inRange: $0.inRange, hasCount: $0.hasCount)
+            SlotState(
+                iconID: $0.icon, hasAction: $0.hasAction, usable: $0.usable, noMana: $0.noMana,
+                glow: $0.glow, rangeApplies: $0.rangeApplies, inRange: $0.inRange, hasCount: $0.hasCount)
         }
         let frame = StripFrame(sequence: lua.sequence, flags: GlobalFlags(symbol: lua.flags), slots: slots)
         #expect(frame.symbols == lua.symbols)
     }
 
     @Test func bgraPixelsReadsChannelsInOrder() {
-        let bytes: [UInt8] = [10, 20, 30, 255, 1, 2, 3, 255]   // B, G, R, A
+        let bytes: [UInt8] = [10, 20, 30, 255, 1, 2, 3, 255]  // B, G, R, A
         bytes.withUnsafeBufferPointer { buf in
             let px = BGRAPixels(base: buf.baseAddress!, width: 2, height: 1, bytesPerRow: 8)
             #expect(px.rgb(0, 0) == (30, 20, 10))

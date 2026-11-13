@@ -4,7 +4,7 @@ public final class StripTracker {
     public enum Status: Equatable, Sendable {
         case searching
         case connected
-        case stale   // found before, but no good frame recently
+        case stale  // found before, but no good frame recently
     }
 
     /// Seconds without a good frame before the state counts as stale (heartbeat is 1 s).

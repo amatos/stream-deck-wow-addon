@@ -1,4 +1,5 @@
 import Testing
+
 @testable import StripKit
 
 @Suite struct CountReaderTests {
@@ -50,7 +51,7 @@ import Testing
 
     @Test func toleratesASinglePixelDifference() throws {
         var img = Render.image(frame(counted: 1), counts: [8])
-        img.set(1, Spec.countAreaY + Spec.countLineHeight + 2 + 1, (255, 255, 255)) // fill 8's top hole
+        img.set(1, Spec.countAreaY + Spec.countLineHeight + 2 + 1, (255, 255, 255))  // fill 8's top hole
         let reader = try #require(CountReader(img, g))
         #expect(reader.readCell(img, 0) == 8)
     }
@@ -62,7 +63,8 @@ import Testing
         let reader = try #require(CountReader(base, g))
         let top = Spec.countAreaY + Spec.countLineHeight + 2
         var two = base
-        two.set(0, top + 4, (255, 255, 255)); two.set(2, top + 4, (255, 255, 255))  // 7's bottom row widened
+        two.set(0, top + 4, (255, 255, 255))
+        two.set(2, top + 4, (255, 255, 255))  // 7's bottom row widened
         #expect(reader.readCell(two, 0) == 7)
         var three = two
         three.set(0, top + 2, (255, 255, 255))
