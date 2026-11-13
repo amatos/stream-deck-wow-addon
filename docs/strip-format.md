@@ -149,12 +149,12 @@ The addon applies these as priority override bindings. The helper sends the same
 | 2 | `CTRL-` | Control |
 | 3 | `SHIFT-` | Shift |
 
-Whether WoW on macOS maps `CTRL` to the Control key or the Command key is to be verified in game during the helper's keypress step; this table is updated then.
+Verified in game: WoW on macOS maps `CTRL` to the Control key. The helper sends each key as modifier-down, key-down, key-up, modifier-up events posted directly to the WoW process, with the numeric-pad flag set on the key events.
 
 ## 10. Open items to verify in game
 
 1. ~~`FontString:SetText` accepts a secret count (§8).~~ Verified.
-2. `CTRL` modifier mapping on macOS (§9). Tested once the helper sends keys.
+2. ~~`CTRL` modifier mapping on macOS (§9).~~ Verified: Control key; all three bars fire.
 3. Proc glow detection returns `true` while a glow is showing (§5.2 bit 8). Needs a proc ability.
 
 Also verified in game: the grid renders pixel-exact at 4 px blocks with exact level values, and the count digits render as pure black and white glyphs matching the reference line.

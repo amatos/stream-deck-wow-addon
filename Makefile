@@ -20,13 +20,14 @@ addon-install:
 
 .PHONY: helper-test helper-app helper-run fixtures
 
-HELPER_COV_BIN = helper/.build/debug/StripKitTests.xctest/Contents/MacOS/StripKitTests
+HELPER_TEST_BINS = helper/.build/debug/StripKitTests.xctest/Contents/MacOS/StripKitTests \
+	-object helper/.build/debug/IconKitTests.xctest/Contents/MacOS/IconKitTests
 
-# Runs the helper's tests and reports StripKit line coverage.
+# Runs the helper's tests and reports StripKit and IconKit line coverage.
 helper-test:
 	cd helper && swift test --enable-code-coverage
-	xcrun llvm-cov report $(HELPER_COV_BIN) -instr-profile helper/.build/debug/codecov/default.profdata \
-		-ignore-filename-regex '(Tests|WoWBarsHelper|\.build)/'
+	xcrun llvm-cov report $(HELPER_TEST_BINS) -instr-profile helper/.build/debug/codecov/default.profdata \
+		-ignore-filename-regex '(Tests|WoWBarsHelper|Vendor|\.build)/'
 
 # A stable identity keeps macOS permissions across rebuilds. Override with
 # `make helper-app SIGN_IDENTITY=-` for ad-hoc signing.

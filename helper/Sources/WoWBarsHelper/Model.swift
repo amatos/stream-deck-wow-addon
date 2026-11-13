@@ -41,7 +41,11 @@ enum Permissions {
 
 /// State shown in the window. Main thread only.
 final class Model: ObservableObject {
-    @Published var snapshot = CaptureSnapshot()
+    @Published var snapshot = CaptureSnapshot() {
+        didSet { requestIcons() }
+    }
+    @Published var icons: [Int: NSImage] = [:]
+    let iconLoader = IconLoader()
     @Published var screenRecording = Permissions.screenRecording
     @Published var accessibility = Permissions.accessibility
     @Published var presentation = Presentation.stored {
@@ -51,8 +55,36 @@ final class Model: ObservableObject {
         }
     }
 
+    @Published var lastKeyMessage = "Click a slot to press its key in WoW."
+
     var onPresentationChange: ((Presentation) -> Void)?
+    let keySender = KeySender()
     private var timer: Timer?
+
+    func startIcons() {
+        iconLoader.onLoad = { [weak self] id, image in self?.icons[id] = image }
+        requestIcons()
+    }
+
+    private func requestIcons() {
+        guard let frame = snapshot.frame else { return }
+        if iconLoader.store == nil { iconLoader.prepare(appBundle: KeySender.wowApp()?.bundleURL) }
+        iconLoader.request(frame.slots.map(\.iconID).filter { icons[$0] == nil })
+    }
+
+    /// Debug: presses a slot's key in WoW, bringing WoW to the front first.
+    func press(slot: Int) {
+        switch keySender.press(slot: slot, activate: true) {
+        case .sent(let name):
+            lastKeyMessage = "Sent \(name) to WoW (bar \(slot / 12 + 1), button \(slot % 12 + 1))."
+        case .noAccessibility:
+            lastKeyMessage = "Grant Accessibility permission first."
+        case .noWoW:
+            lastKeyMessage = "WoW is not running."
+        case .badSlot:
+            lastKeyMessage = "No key for that slot."
+        }
+    }
 
     func startPolling(onScreenRecordingGranted: @escaping () -> Void) {
         timer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in

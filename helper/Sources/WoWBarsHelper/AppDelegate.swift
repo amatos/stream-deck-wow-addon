@@ -14,6 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         model.onPresentationChange = { [weak self] in self?.apply($0) }
         apply(model.presentation)
 
+        model.startIcons()
         capture.onUpdate = { [weak self] in self?.model.snapshot = $0 }
         capture.start()
         model.startPolling { [weak self] in self?.capture.refresh() }

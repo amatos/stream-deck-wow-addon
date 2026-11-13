@@ -77,11 +77,17 @@ struct MainView: View {
                     HStack(spacing: 4) {
                         Text("Bar \(bar + 1)").font(.caption).frame(width: 40, alignment: .leading)
                         ForEach(0..<12, id: \.self) { button in
-                            SlotCell(slot: slot(bar * 12 + button))
+                            let index = bar * 12 + button
+                            Button { model.press(slot: index) } label: {
+                                SlotCell(slot: slot(index), icon: slot(index).flatMap { model.icons[$0.iconID] })
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
-                Text("Green: usable · Grey: unusable · Blue: not enough mana · Gold border: proc glow · Red corner: out of range")
+                Text(model.lastKeyMessage)
+                    .font(.caption)
+                Text("Dimmed grey: unusable · Blue: not enough mana · Gold border: proc glow · Red corner: out of range")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -161,15 +167,26 @@ struct StatusDot: View {
 
 struct SlotCell: View {
     var slot: SlotState?
+    var icon: NSImage?
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             RoundedRectangle(cornerRadius: 5)
                 .fill(fill)
+            if let icon, let slot, slot.hasAction {
+                Image(nsImage: icon)
+                    .resizable()
+                    .interpolation(.high)
+                    .clipShape(RoundedRectangle(cornerRadius: 5))
+                    .saturation(slot.usable || slot.noMana ? 1 : 0)
+                    .brightness(slot.usable || slot.noMana ? 0 : -0.35)
+                    .overlay(slot.noMana ? Color.blue.opacity(0.45) : Color.clear)
+                    .clipShape(RoundedRectangle(cornerRadius: 5))
+            }
             RoundedRectangle(cornerRadius: 5)
                 .strokeBorder(slot?.glow == true ? Color.yellow : Color.secondary.opacity(0.3),
                               lineWidth: slot?.glow == true ? 3 : 1)
-            if let slot, slot.hasAction {
+            if let slot, slot.hasAction, icon == nil {
                 Text(String(slot.iconID))
                     .font(.system(size: 8).monospacedDigit())
                     .foregroundStyle(.white.opacity(0.85))
@@ -180,6 +197,7 @@ struct SlotCell: View {
                 Text(slot.count.map(String.init) ?? "?")
                     .font(.system(size: 12, weight: .bold).monospacedDigit())
                     .foregroundStyle(.white)
+                    .shadow(color: .black, radius: 1)
                     .padding(3)
             }
             if let slot, slot.rangeApplies && !slot.inRange {
@@ -200,13 +218,13 @@ struct SlotCell: View {
     }
 
     private var tooltip: String {
-        guard let slot, slot.hasAction else { return "Empty" }
+        guard let slot, slot.hasAction else { return "Empty · click to press its key in WoW" }
         var parts = ["Icon \(slot.iconID)", slot.usable ? "usable" : "unusable"]
         if slot.noMana { parts.append("not enough mana") }
         if slot.glow { parts.append("proc glow") }
         if slot.rangeApplies { parts.append(slot.inRange ? "in range" : "out of range") }
         if slot.hasCount { parts.append("count \(slot.count.map(String.init) ?? "unreadable")") }
-        return parts.joined(separator: ", ")
+        return parts.joined(separator: ", ") + " · click to press its key in WoW"
     }
 }
 

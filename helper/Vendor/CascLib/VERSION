@@ -1,0 +1,5 @@
+CascLib by Ladislav Zezula (MIT)
+https://github.com/ladislav-zezula/CascLib
+commit 6b889ec8f421cbc9baccec296c582362ab917887
+Only src/ is vendored, without the bundled zlib (the system libz is used) and Windows DLL files.
+The Overwatch key-update script (src/overwatch/update-from-tactlib.py) is omitted.
