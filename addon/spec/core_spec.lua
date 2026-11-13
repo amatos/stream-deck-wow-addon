@@ -137,6 +137,21 @@ describe("Core", function()
       local symbols = ns.Encoding.buildFrame(0, 0, {})
       assert.are_not.equal(Core.signature(symbols, { 1 }, false), Core.signature(symbols, { 2 }, false))
     end)
+
+    it("changes with every slot, including bars 4 and 5", function()
+      local empty = Core.signature(ns.Encoding.buildFrame(0, 0, {}), {}, false)
+      for _, slot in ipairs({ 1, 36, 37, 48, 60 }) do
+        local slots = { [slot] = { icon = 1, hasAction = true } }
+        local symbols = ns.Encoding.buildFrame(0, 0, slots)
+        assert.are_not.equal(empty, Core.signature(symbols, {}, false), "slot " .. slot)
+      end
+    end)
+
+    it("ignores the sequence number", function()
+      local a = ns.Encoding.buildFrame(1, 0, {})
+      local b = ns.Encoding.buildFrame(2, 0, {})
+      assert.are.equal(Core.signature(a, {}, false), Core.signature(b, {}, false))
+    end)
   end)
 
   describe("slash", function()

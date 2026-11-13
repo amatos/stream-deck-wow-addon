@@ -28,8 +28,10 @@ end
 -- Secret counts force a redraw every tick instead (they cannot be compared).
 function Core.signature(symbols, counts, anySecret)
   if anySecret then return nil end
+  -- Global flags (symbol 11) through the last slot record (symbol 371); Lua arrays are 1-based.
+  local E = ns.Encoding
   local parts = {}
-  for i = 12, 228 do parts[#parts + 1] = symbols[i] end
+  for i = 12, 12 + E.SLOTS * E.SYMBOLS_PER_SLOT do parts[#parts + 1] = symbols[i] end
   for k = 1, #counts do parts[#parts + 1] = tostring(counts[k]) end
   return table.concat(parts, ",")
 end
