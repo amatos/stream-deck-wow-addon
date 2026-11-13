@@ -9,6 +9,11 @@ updates:
       dev-dependencies:
         dependency-type: development
         update-types: [minor, patch]
+    ignore:
+      # TypeScript 7 (native port) drops the JS compiler API that @rollup/plugin-typescript
+      # needs. Lift this once the plugin supports TS 7.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /

@@ -265,7 +265,7 @@ Each test target fails if line coverage drops below `COVERAGE_MIN` (default 80%)
 | `make version-check`   | The addon `.toc` and the plugin manifest match `VERSION`.                                                        |
 | `make plugin-validate` | Builds the plugin and validates its manifest with Elgato's CLI.                                                  |
 
-GitHub Actions runs all of these on every push to `main` and every pull request (`.github/workflows/ci.yml`): the addon and plugin jobs on Ubuntu, and the helper job on the `xcode-27` macOS runner, so CI's swift-format matches Xcode 27's. Fix Swift lint findings with `swift format -i -r -p` on the paths `make helper-lint` prints. Dependabot keeps the plugin's npm packages and the workflow's actions up to date.
+GitHub Actions runs all of these on every push to `main` and every pull request (`.github/workflows/ci.yml`): the addon and plugin jobs on Ubuntu, and the helper job on the `xcode-27` macOS runner, so CI's swift-format matches Xcode 27's. Fix Swift lint findings with `swift format -i -r -p` on the paths `make helper-lint` prints. Dependabot keeps the plugin's npm packages and the workflow's actions up to date, except for major TypeScript releases: TypeScript 7 (the native port) drops the JavaScript compiler API that `@rollup/plugin-typescript` uses, so the plugin stays on TypeScript 5.x until that plugin supports 7.
 
 ## Using it in game
 
