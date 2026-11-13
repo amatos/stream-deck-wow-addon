@@ -1,0 +1,18 @@
+.DS_Store
+
+# Swift / Xcode
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+
+# Node
+node_modules/
+dist/
+coverage/
+
+# Lua tests
+luacov.*.out
+
+# Project-local Lua tooling
+.luarocks/

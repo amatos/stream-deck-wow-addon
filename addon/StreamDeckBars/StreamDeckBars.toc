@@ -1,0 +1,12 @@
+## Interface: 16001
+## Title: Stream Deck Bars
+## Notes: Mirrors action bars 1-3 to an Elgato Stream Deck via an on-screen data strip.
+## Version: 0.1.0
+## SavedVariables: StreamDeckBarsDB
+
+Encoding.lua
+Layout.lua
+State.lua
+Bindings.lua
+Strip.lua
+Core.lua

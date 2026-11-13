@@ -1,0 +1,6 @@
+return {
+  include = { "StreamDeckBars/" },
+  exclude = { "spec/" },
+  statsfile = "luacov.stats.out",
+  reportfile = "luacov.report.out",
+}
