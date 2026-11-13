@@ -18,7 +18,7 @@ jobs:
     name: Addon (lint, tests, fixture, versions)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
       - name: Lint
         run: nix develop -c make addon-lint
@@ -33,8 +33,8 @@ jobs:
     name: Plugin (types, tests, build, manifest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -52,7 +52,7 @@ jobs:
     # macOS 27 with Xcode 27, so swift-format matches the version the code was formatted with.
     runs-on: xcode-27
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Toolchain
         run: swift --version && swift format --version
       - name: Lint
