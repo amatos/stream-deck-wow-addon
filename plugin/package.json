@@ -15,7 +15,7 @@
         "@rollup/plugin-terser": "^1.0.2",
         "@rollup/plugin-typescript": "^12.3.1",
         "@tsconfig/node24": "^24.0.6",
-        "@types/node": "~24.19.2",
+        "@types/node": "~26.6.6",
         "@types/ws": "^8.18.2",
         "@vitest/coverage-v8": "^5.1.0",
         "rollup": "^4.68.2",
