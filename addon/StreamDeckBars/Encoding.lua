@@ -4,8 +4,9 @@ local _, ns = ...
 local Encoding = {}
 ns.Encoding = Encoding
 
-Encoding.VERSION = 3
-Encoding.BLOCK = 4          -- block size in physical pixels
+Encoding.VERSION = 4
+Encoding.BLOCK = 1          -- block size in physical pixels
+Encoding.PADDING = 2        -- black border around the whole strip
 Encoding.WIDTH = 48         -- blocks per grid row
 Encoding.SLOTS = 60          -- bars 1-5 x 12
 Encoding.SYMBOLS_PER_SLOT = 6
@@ -15,7 +16,9 @@ Encoding.COUNT_FONT = "Fonts\\ARIALN.TTF"
 Encoding.COUNT_FONT_SIZE = 12
 Encoding.COUNT_REFERENCE = "0123456789"
 Encoding.COUNT_CELL_WIDTH = 32
-Encoding.COUNT_CELLS_PER_LINE = 6
+Encoding.COUNT_CELLS_PER_LINE = 3
+Encoding.COUNT_AREA_WIDTH = 96
+Encoding.COUNT_GAP = 2      -- pixels between the grid and the count area
 Encoding.COUNT_LINE_HEIGHT = 14
 
 -- Level index (0-3) to colour component (0-1).
@@ -143,7 +146,7 @@ end
 -- Top-left pixel offset of the count area, relative to the grid's top-left.
 function Encoding.countAreaOffset()
   local _, h = Encoding.gridSize()
-  return 0, h + Encoding.BLOCK
+  return 0, h + Encoding.COUNT_GAP
 end
 
 -- Offset of count cell k (1-based) relative to the count area's top-left.

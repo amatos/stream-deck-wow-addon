@@ -1,7 +1,7 @@
-// Constants from docs/strip-format.md (version 3).
+// Constants from docs/strip-format.md (version 4).
 public enum Spec {
-    public static let version = 3
-    public static let block = 4
+    public static let version = 4
+    public static let block = 1
     public static let width = 48
     public static let slots = 60
     public static let symbolsPerSlot = 6
@@ -25,11 +25,13 @@ public enum Spec {
         return (slot / 12 + 1, slot % 12 + 1)
     }
 
-    // Count area (§7), in strip pixels at block size 4: one block below the grid.
-    public static var countAreaY: Int { gridRows * block + block }
+    // Count area (§7), in strip pixels: 2 px below the grid, 96 px wide.
+    public static let countGap = 2
+    public static let countAreaWidth = 96
+    public static var countAreaY: Int { gridRows * block + countGap }
     public static let countLineHeight = 14
     public static let countCellWidth = 32
-    public static let countCellsPerLine = 6
+    public static let countCellsPerLine = 3
     public static let gridPixelWidth = width * block
 
     public static var gridRows: Int { (symbolCount + width - 1) / width }

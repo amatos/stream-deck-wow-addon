@@ -16,7 +16,7 @@ import Testing
         o.originX = 37; o.originY = 53; o.width = 400; o.height = 200
         let frame = StripFrame.sample(sequence: 4000)
         let (g, decoded) = try #require(StripDecoder.locate(Render.image(frame, o)))
-        #expect(g == StripGeometry(originX: 37, originY: 53, pitch: 4))
+        #expect(g == StripGeometry(originX: 37, originY: 53, pitch: 1))
         #expect(decoded == frame)
     }
 
@@ -25,9 +25,27 @@ import Testing
         o.scale = 2; o.width = 500; o.height = 200
         let frame = StripFrame.sample(counted: [1, 2])
         let (g, decoded) = try #require(StripDecoder.locate(Render.image(frame, counts: [12, 7], o)))
-        #expect(g.pitch == 8)
+        #expect(g.pitch == 2)
         #expect(decoded.slots[1].count == 12)
         #expect(decoded.slots[2].count == 7)
+    }
+
+    @Test func handlesTheVersion1BlockSize() throws {
+        var o = Render.Options()
+        o.scale = 4; o.width = 800; o.height = 400
+        let frame = StripFrame.sample(counted: [7])
+        let (g, decoded) = try #require(StripDecoder.locate(Render.image(frame, counts: [42], o)))
+        #expect(g.pitch == 4)
+        #expect(decoded.slots[7].count == 42)
+    }
+
+    @Test func readsSinglePixelBlocksExactly() throws {
+        // Neighbouring 1 px blocks must not bleed into each other when sampled.
+        var symbols = StripFrame.sample().symbols
+        let (g, _) = try #require(StripDecoder.locate(Render.image(symbols: symbols)))
+        #expect(g.pitch == 1)
+        symbols[13] = 63; symbols[14] = 0
+        #expect(StripDecoder.symbols(Render.image(symbols: symbols), g)?[13...14] == [63, 0])
     }
 
     @Test func toleratesColourShifts() {
@@ -52,23 +70,23 @@ import Testing
         var symbols = StripFrame.sample().symbols
         symbols[20] ^= 1
         let img = Render.image(symbols: symbols)
-        let g = StripGeometry(originX: 0, originY: 0, pitch: 4)
+        let g = StripGeometry(originX: 0, originY: 0, pitch: 1)
         #expect(StripDecoder.decodeGrid(img, g) == .failure(.badChecksum))
         #expect(decode(img) == nil)
     }
 
     @Test func rejectsAnUnknownVersion() {
         var symbols = StripFrame.sample().symbols
-        symbols[8] = 4
-        let g = StripGeometry(originX: 0, originY: 0, pitch: 4)
-        #expect(StripDecoder.decodeGrid(Render.image(symbols: symbols), g) == .failure(.badVersion(4)))
+        symbols[8] = 5
+        let g = StripGeometry(originX: 0, originY: 0, pitch: 1)
+        #expect(StripDecoder.decodeGrid(Render.image(symbols: symbols), g) == .failure(.badVersion(5)))
     }
 
     @Test func rejectsAWrongMarker() {
         let img = Render.image(StripFrame.sample())
-        let shifted = StripGeometry(originX: 4, originY: 0, pitch: 4)
+        let shifted = StripGeometry(originX: 1, originY: 0, pitch: 1)
         #expect(StripDecoder.decodeGrid(img, shifted) != .success(StripFrame.sample()))
-        let g = StripGeometry(originX: 0, originY: 0, pitch: 4)
+        let g = StripGeometry(originX: 0, originY: 0, pitch: 1)
         var symbols = StripFrame.sample().symbols
         symbols[1] = 63
         #expect(StripDecoder.decodeGrid(Render.image(symbols: symbols), g) == .failure(.badMarker))
@@ -76,8 +94,8 @@ import Testing
 
     @Test func rejectsAGridOffTheImage() {
         var o = Render.Options()
-        o.width = 150
-        let g = StripGeometry(originX: 0, originY: 0, pitch: 4)
+        o.width = 40   // narrower than the 48 px grid
+        let g = StripGeometry(originX: 0, originY: 0, pitch: 1)
         #expect(StripDecoder.decodeGrid(Render.image(StripFrame.sample(), o), g) == .failure(.offImage))
         #expect(StripDecoder.symbols(RGBImage(width: 4, height: 4), g) == nil)
     }
@@ -85,7 +103,7 @@ import Testing
     @Test func rejectsFlatCalibration() {
         var o = Render.Options()
         o.colour = { _ in 128 }
-        let g = StripGeometry(originX: 0, originY: 0, pitch: 4)
+        let g = StripGeometry(originX: 0, originY: 0, pitch: 1)
         #expect(StripDecoder.symbols(Render.image(StripFrame.sample(), o), g) == nil)
         #expect(StripDecoder.Calibration(samples: []) == nil)
     }

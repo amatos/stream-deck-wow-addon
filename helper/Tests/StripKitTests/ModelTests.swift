@@ -35,7 +35,7 @@ import Testing
         #expect(s.count == Spec.symbolCount)
         #expect(Array(s[0..<4]) == Spec.marker)
         #expect(Array(s[4..<8]) == Spec.calibration)
-        #expect(s[8] == 3)
+        #expect(s[8] == 4)
         #expect(s[9] == 0 && s[10] == 1)       // 4097 wraps to 1
         #expect(s[11] == 1)
         let (a, b) = Spec.checksum(s, from: 8, to: 371)
@@ -52,7 +52,7 @@ import Testing
         #expect(Spec.levels(of: 60) == (3, 3, 0))
         #expect(Spec.levels(of: 21) == (1, 1, 1))
         #expect(Spec.gridRows == 8)
-        #expect(Spec.countAreaY == 36)
+        #expect(Spec.countAreaY == 10)
         #expect(Spec.barButton(slot: 0)! == (1, 1))
         #expect(Spec.barButton(slot: 35)! == (3, 12))
         #expect(Spec.barButton(slot: 36)! == (4, 1))
@@ -64,7 +64,8 @@ import Testing
     }
 
     @Test func geometryScale() {
-        #expect(StripGeometry(originX: 0, originY: 0, pitch: 8).scale == 2)
+        #expect(StripGeometry(originX: 0, originY: 0, pitch: 2).scale == 2)
+        #expect(StripGeometry(originX: 0, originY: 0, pitch: 1).scale == 1)
     }
 
     /// The addon (Lua) and helper (Swift) must agree on every symbol.

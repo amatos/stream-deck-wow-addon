@@ -13,7 +13,7 @@ public struct CountReader {
     /// Learns templates from the reference line. Nil when it does not hold exactly 10 glyphs.
     public init?<P: PixelSource>(_ img: P, _ g: StripGeometry) {
         geometry = g
-        let rect = Self.lineRect(g, line: 0, x: 0, width: Spec.gridPixelWidth)
+        let rect = Self.lineRect(g, line: 0, x: 0, width: Spec.countAreaWidth)
         let glyphs = Self.glyphs(img, rect)
         guard glyphs.count == 10 else { return nil }
         templates = glyphs

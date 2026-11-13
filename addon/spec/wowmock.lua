@@ -18,6 +18,7 @@ local function region()
   function r:SetSize(w, h) self.w, self.h = w, h end
   function r:SetPoint(...) self.points[#self.points + 1] = { ... } end
   function r:ClearAllPoints() self.points = {} end
+  function r:SetAllPoints(target) self.allPoints = target end
   function r:Show() self.shown = true end
   function r:Hide() self.shown = false end
   function r:IsShown() return self.shown end

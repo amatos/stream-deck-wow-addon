@@ -51,7 +51,7 @@ enum Render {
         // Count area background: reference line plus count lines.
         let lines = 1 + (counts.count + Spec.countCellsPerLine - 1) / Spec.countCellsPerLine
         img.fill(x: o.originX, y: o.originY + Spec.countAreaY * o.scale,
-                 w: Spec.gridPixelWidth * o.scale, h: lines * Spec.countLineHeight * o.scale, (0, 0, 0))
+                 w: Spec.countAreaWidth * o.scale, h: lines * Spec.countLineHeight * o.scale, (0, 0, 0))
         if o.drawReference {
             text(&img, "0123456789", x: 0, line: 0, o)
         }

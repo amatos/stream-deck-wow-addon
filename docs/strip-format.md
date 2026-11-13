@@ -1,6 +1,6 @@
-# Strip Format — version 3
+# Strip Format — version 4
 
-Version 3 mirrors bars 1–5: 60 slot records (version 1 had 36), so the grid is 8 rows tall and the count area sits below it.
+Version 4 shrinks blocks to 1 px (version 3 used 4 px) and narrows the count area, so the whole strip is about 100 × 30 px. It mirrors bars 1–5 in 60 slot records.
 
 Single source of truth for how the addon encodes action-bar state on screen and how the helper decodes it. The addon, helper and their tests all follow this document. Any change to the layout bumps the version.
 
@@ -11,10 +11,11 @@ The addon draws a small grid of solid-colour blocks (the **data grid**) and, dir
 ## 2. Geometry
 
 - **Pixel-perfect frame.** The strip's root frame ignores parent scale and sets its scale to `768 / physicalScreenHeight`, so 1 UI unit = 1 physical pixel of WoW's render output.
-- **Block size `B` = 4 px** (square).
-- **Grid width `W` = 48 blocks** (192 px). Blocks are laid out row-major from the top-left; the grid is `ceil(N / W)` rows tall, where `N` is the symbol count (§4). Unused trailing blocks in the last row are black.
-- **Anchor.** Top-left of the WoW window by default, offset (0, 0). The position is a saved setting; the helper does not assume it and finds the strip by searching for the marker (§3.1).
-- **Sampling.** The helper reads the average of the central 2×2 pixels of each block, so edge blur from scaling up to ~1.5× is tolerated.
+- **Block size `B` = 1 px.** This needs WoW's render output captured 1:1 (render scale 100%); scaling would blur neighbouring blocks together.
+- **Padding.** A 2 px black border surrounds the whole strip, so window edges and rounded corners never blend into the outermost blocks.
+- **Grid width `W` = 48 blocks** (48 px). Blocks are laid out row-major from the top-left; the grid is `ceil(N / W)` rows tall, where `N` is the symbol count (§4). Unused trailing blocks in the last row are black.
+- **Anchor.** Top-left of the WoW window by default, offset (0, 0) to the outside of the padding. The position is a saved setting; the helper does not assume it and finds the strip by searching for the marker (§3.1).
+- **Sampling.** The helper reads each block's single pixel. (For blocks of 2 px or more it averages the central 2×2 pixels; the decoder measures the block pitch from the marker.)
 
 ## 3. Symbols
 
@@ -33,7 +34,7 @@ Displays, colour profiles and capture can shift these values, so the decoder nev
 
 ### 3.1 Marker
 
-Symbols 0–3, fixed: levels (R,G,B) = `(3,0,3)`, `(0,3,0)`, `(0,3,3)`, `(3,3,0)` — magenta, green, cyan, yellow. Chosen to be unlikely in game art in that exact sequence. The decoder searches for this sequence on 4-px boundaries, then confirms with the checksum.
+Symbols 0–3, fixed: levels (R,G,B) = `(3,0,3)`, `(0,3,0)`, `(0,3,3)`, `(3,3,0)` — magenta, green, cyan, yellow. Chosen to be unlikely in game art in that exact sequence. The decoder searches for this sequence, then confirms with the checksum.
 
 ### 3.2 Calibration
 
@@ -47,7 +48,7 @@ Symbols 4–7, fixed greys at levels 0, 1, 2, 3 (`(0,0,0)`, `(1,1,1)`, `(2,2,2)`
 |---|---|---|
 | 0–3 | 4 | Marker (§3.1) |
 | 4–7 | 4 | Calibration (§3.2) |
-| 8 | 1 | Format version = `3` |
+| 8 | 1 | Format version = `4` |
 | 9–10 | 2 | Sequence number, 12 bits, big-endian (symbol 9 = high 6 bits). Increments on every redraw, wraps at 4096. |
 | 11 | 1 | Global flags (§4.1) |
 | 12–371 | 360 | 60 slot records × 6 symbols (§5) |
@@ -111,10 +112,10 @@ The decoder discards any frame whose checksum does not match (for example a fram
 
 Counts can be secret in combat, so they are drawn as text rather than encoded.
 
-- **Position.** Starts one block (4 px) below the bottom of the data grid, left-aligned with it; same width as the grid (192 px).
+- **Position.** Starts 2 px below the bottom of the data grid, left-aligned with it; 96 px wide.
 - **Font.** `Fonts\ARIALN.TTF`, 12 px, flags `MONOCHROME` (no anti-aliasing), white `(255,255,255)` on black. Glyphs are therefore pixel-exact and repeatable.
 - **Reference line.** The first line shows the fixed string `0123456789`. The decoder segments it into ten glyph templates at runtime, so it does not depend on font rendering details or resolution.
-- **Count cells.** Following lines contain one cell per slot whose *has count* bit is set, in slot order. The k-th cell belongs to the k-th slot with that bit set. Cells are 32 px wide, 6 per line, left-aligned text, line height 14 px.
+- **Count cells.** Following lines contain one cell per slot whose *has count* bit is set, in slot order. The k-th cell belongs to the k-th slot with that bit set. Cells are 32 px wide, 3 per line, left-aligned text, line height 14 px.
 - **Decoding.** Within a cell, the decoder splits glyphs on empty pixel columns and matches each against the templates. An empty cell, or one that fails to match, is treated as "count unknown" and the last good value is kept.
 - **Cell count.** Lines only exist for the cells needed, so the area is just the reference line when no slot has a count.
 
@@ -165,4 +166,4 @@ Verified in game: WoW on macOS maps `CTRL` to the Control key. The helper sends 
 2. ~~`CTRL` modifier mapping on macOS (§9).~~ Verified: Control key; all three bars fire.
 3. Proc glow detection returns `true` while a glow is showing (§5.2 bit 8). Needs a proc ability.
 
-Also verified in game: the grid renders pixel-exact at 4 px blocks with exact level values, and the count digits render as pure black and white glyphs matching the reference line.
+Also verified in game (version 1): the grid renders pixel-exact at 4 px blocks with exact level values, and the count digits render as pure black and white glyphs matching the reference line.

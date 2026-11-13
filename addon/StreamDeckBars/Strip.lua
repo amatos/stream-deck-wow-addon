@@ -38,34 +38,33 @@ function Strip.create(position)
   root:SetFrameStrata("TOOLTIP")
   root:SetFrameLevel(10000)
 
+  -- Everything sits inside a black padding border (docs/strip-format.md §2).
+  local pad = E.PADDING
   local gridW, gridH = E.gridSize()
   local areaX, areaY = E.countAreaOffset()
+  areaX, areaY = areaX + pad, areaY + pad
 
-  local gridBg = root:CreateTexture(nil, "BACKGROUND")
-  gridBg:SetColorTexture(0, 0, 0, 1)
-  gridBg:SetPoint("TOPLEFT", root, "TOPLEFT", 0, 0)
-  gridBg:SetSize(gridW, gridH)
-
-  local countBg = root:CreateTexture(nil, "BACKGROUND")
-  countBg:SetColorTexture(0, 0, 0, 1)
-  countBg:SetPoint("TOPLEFT", root, "TOPLEFT", areaX, -areaY)
+  local bg = root:CreateTexture(nil, "BACKGROUND")
+  bg:SetColorTexture(0, 0, 0, 1)
+  bg:SetAllPoints(root)
 
   local blocks = {}
   for i = 1, E.SYMBOL_COUNT do
     local x, y = E.blockPosition(i)
-    blocks[i] = newBlock(root, x, y, E.BLOCK)
+    blocks[i] = newBlock(root, pad + x, pad + y, E.BLOCK)
   end
 
   local reference = newText(root, areaX, areaY)
   reference:SetText(E.COUNT_REFERENCE)
 
   Strip.root = root
+  Strip.bg = bg
   Strip.blocks = blocks
-  Strip.countBg = countBg
   Strip.reference = reference
   Strip.cells = {}
   Strip.areaX, Strip.areaY = areaX, areaY
-  Strip.gridW, Strip.gridH = gridW, gridH
+  Strip.width = 2 * pad + math.max(gridW, E.COUNT_AREA_WIDTH)
+  Strip.countCells = 0
 
   Strip.applyScale()
   Strip.setPosition(position)
@@ -82,14 +81,14 @@ function Strip.setPosition(position)
   if position then x, y = position.x or 0, position.y or 0 end
   Strip.root:ClearAllPoints()
   Strip.root:SetPoint("TOPLEFT", UIParent, "TOPLEFT", x, -y)
-  Strip.root:SetSize(Strip.gridW, Strip.areaY + E.COUNT_LINE_HEIGHT)
+  Strip.setCountLines(Strip.countCells or 0)
 end
 
--- Sizes the count background for the reference line plus `cells` count cells.
+-- Sizes the strip for the reference line plus `cells` count cells.
 function Strip.setCountLines(cells)
+  Strip.countCells = cells
   local lines = 1 + math.ceil(cells / E.COUNT_CELLS_PER_LINE)
-  Strip.countBg:SetSize(Strip.gridW, lines * E.COUNT_LINE_HEIGHT)
-  Strip.root:SetSize(Strip.gridW, Strip.areaY + lines * E.COUNT_LINE_HEIGHT)
+  Strip.root:SetSize(Strip.width, Strip.areaY + lines * E.COUNT_LINE_HEIGHT + E.PADDING)
 end
 
 local function cell(k)
@@ -102,7 +101,7 @@ local function cell(k)
   return fs
 end
 
--- Paints symbols (array of 230) and count values (array, values may be secret).
+-- Paints symbols (array of SYMBOL_COUNT) and count values (array, values may be secret).
 function Strip.render(symbols, counts)
   for i, s in ipairs(symbols) do
     local r, g, b = E.symbolToColor(s)

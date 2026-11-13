@@ -2,7 +2,7 @@ import Testing
 @testable import StripKit
 
 @Suite struct CountReaderTests {
-    let g = StripGeometry(originX: 0, originY: 0, pitch: 4)
+    let g = StripGeometry(originX: 0, originY: 0, pitch: 1)
 
     func frame(counted n: Int) -> StripFrame {
         StripFrame.sample(counted: Array(10..<(10 + n)))

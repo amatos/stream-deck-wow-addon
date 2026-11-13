@@ -31,7 +31,7 @@ public enum StripDecoder {
     static func markerGeometry<P: PixelSource>(_ img: P, x: Int, y: Int) -> StripGeometry? {
         var run = 0
         while x + run < img.width && isMagenta(img.rgb(x + run, y)) { run += 1 }
-        guard run >= 2 else { return nil }
+        guard run >= 1 else { return nil }
         // Measure along a row inside the block, away from blended edges.
         let row = y + run / 2
         guard row < img.height else { return nil }
@@ -48,7 +48,7 @@ public enum StripDecoder {
             while cx < img.width && test(img.rgb(cx, row)) { cx += 1 }
         }
         let pitch = Double(starts[3] - starts[0]) / 3.0
-        guard pitch >= 2 else { return nil }
+        guard pitch >= 1 else { return nil }
         for i in 1..<4 {
             let gap = Double(starts[i] - starts[i - 1])
             if abs(gap - pitch) > 1.5 { return nil }
@@ -60,9 +60,16 @@ public enum StripDecoder {
 
     // MARK: Sampling
 
-    /// Average of the central 2x2 pixels of block `index`, or nil when off-image.
+    /// Block `index`'s colour, or nil when off-image: its single pixel for blocks under
+    /// 2 px, otherwise the average of its central 2x2 pixels.
     static func sample<P: PixelSource>(_ img: P, _ g: StripGeometry, _ index: Int) -> (r: Int, g: Int, b: Int)? {
         let col = index % Spec.width, row = index / Spec.width
+        if g.pitch < 2 {
+            let x = g.originX + Int((Double(col) * g.pitch).rounded(.down))
+            let y = g.originY + Int((Double(row) * g.pitch).rounded(.down))
+            guard x >= 0, y >= 0, x < img.width, y < img.height else { return nil }
+            return img.rgb(x, y)
+        }
         let cx = Double(g.originX) + (Double(col) + 0.5) * g.pitch
         let cy = Double(g.originY) + (Double(row) + 0.5) * g.pitch
         let x0 = Int((cx - 0.5).rounded(.down)), y0 = Int((cy - 0.5).rounded(.down))
