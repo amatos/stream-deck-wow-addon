@@ -1,16 +1,11 @@
-LUAROCKS := luarocks --lua-version 5.1 --tree $(CURDIR)/.luarocks
 WOW_ADDONS ?= /Applications/World of Warcraft/_forever_/Interface/AddOns
 
-.PHONY: addon-deps addon-test addon-install
+.PHONY: addon-test addon-install
 
-# Installs busted and luacov into ./.luarocks (needs LuaJIT headers).
-addon-deps:
-	$(LUAROCKS) install busted LUA_INCDIR=$$(dirname $$(dirname $$(readlink -f $$(command -v luajit))))/include/luajit-2.1
-	$(LUAROCKS) install luacov
-
+# busted and luacov come from the Nix dev shell (`nix develop`).
 addon-test:
-	cd addon && eval "$$($(LUAROCKS) path)" && rm -f luacov.stats.out luacov.report.out \
-		&& ../.luarocks/bin/busted --coverage && ../.luarocks/bin/luacov \
+	cd addon && rm -f luacov.stats.out luacov.report.out \
+		&& busted --coverage && luacov \
 		&& sed -n '/^Summary/,$$p' luacov.report.out
 
 # Copies the addon into the WoW Forever AddOns folder.
@@ -72,3 +67,73 @@ plugin-build:
 # Links the plugin folder into Stream Deck (restart the Stream Deck app afterwards).
 plugin-install: plugin-build
 	ln -sfn "$(CURDIR)/$(PLUGIN_DIR)" "$(SD_PLUGINS)/cc.matos.streamdeck.wowbars.sdPlugin"
+
+.PHONY: dist dist-check dist-addon dist-plugin dist-helper set-version
+
+# VERSION is the single source of the release version. Change it with `make set-version V=x.y.z`.
+VERSION := $(shell cat VERSION)
+TOC = addon/StreamDeckBars/StreamDeckBars.toc
+DIST = $(CURDIR)/dist
+DIST_IDENTITY ?= Developer ID Application
+# Store the credentials once with: xcrun notarytool store-credentials wowbars-notary
+NOTARY_PROFILE ?= wowbars-notary
+# Set NOTARIZE=0 to skip notarization, e.g. for a local test of the packaging.
+NOTARIZE ?= 1
+DIST_APP = helper/build/dist/WoW Bars Helper.app
+
+# Builds every artifact into dist/ for a release.
+dist: dist-check dist-addon dist-plugin dist-helper
+	@ls -1 "$(DIST)"
+
+# Fails unless the addon, plugin manifest and working tree agree on what's being released.
+dist-check:
+	@grep -qx '\#\# Version: $(VERSION)' $(TOC) && grep -q '"Version": "$(VERSION).0"' $(PLUGIN_DIR)/manifest.json \
+		|| { echo "Versions don't match VERSION ($(VERSION)); run make set-version V=$(VERSION)"; exit 1; }
+	@git diff --quiet HEAD -- addon helper plugin \
+		|| echo "warning: addon/, helper/ or plugin/ has uncommitted changes"
+	@rm -rf "$(DIST)" && mkdir -p "$(DIST)"
+
+# Zip with the addon folder at the top, as WoW addon sites and manual installs expect.
+# Packs a copy in addon/build/ so LICENSE can be added.
+dist-addon:
+	rm -rf addon/build && mkdir -p addon/build
+	cp -R addon/StreamDeckBars addon/build/
+	cp LICENSE addon/build/StreamDeckBars/
+	cd addon/build && zip -qrX "$(DIST)/StreamDeckBars-$(VERSION).zip" StreamDeckBars -x '*.DS_Store'
+
+# Writes V to VERSION, the addon .toc and the plugin manifest (which needs a 4-part version).
+# Only the manifest's first "Version" is the plugin's; the later one is the Node.js version.
+# The helper reads VERSION when it's built.
+set-version:
+	@echo "$(V)" | grep -Eqx '[0-9]+\.[0-9]+\.[0-9]+' || { echo "Usage: make set-version V=x.y.z"; exit 1; }
+	echo "$(V)" > VERSION
+	sed 's/^## Version: .*/## Version: $(V)/' $(TOC) > $(TOC).tmp && mv $(TOC).tmp $(TOC)
+	sed '1,/"Version":/s/^\([[:space:]]*"Version": "\)[^"]*"/\1$(V).0"/' $(PLUGIN_DIR)/manifest.json > $(PLUGIN_DIR)/manifest.json.tmp \
+		&& mv $(PLUGIN_DIR)/manifest.json.tmp $(PLUGIN_DIR)/manifest.json
+
+# Elgato's CLI validates the manifest and packs the .sdPlugin folder into an installer file.
+# It rewrites manifest.json while packing, so it packs a copy in plugin/build/,
+# with LICENSE and the bundled dependencies' licenses added.
+dist-plugin: plugin-build
+	rm -rf plugin/build && mkdir -p plugin/build
+	cp -R $(PLUGIN_DIR) plugin/build/
+	cp LICENSE plugin/build/cc.matos.streamdeck.wowbars.sdPlugin/
+	node tools/third-party-licenses.mjs plugin > plugin/build/cc.matos.streamdeck.wowbars.sdPlugin/THIRD_PARTY_LICENSES
+	cd plugin && npx streamdeck pack --no-update-check --force --no-file-list \
+		--output "$(DIST)" build/cc.matos.streamdeck.wowbars.sdPlugin
+	mv "$(DIST)/cc.matos.streamdeck.wowbars.streamDeckPlugin" \
+		"$(DIST)/cc.matos.streamdeck.wowbars-$(VERSION).streamDeckPlugin"
+
+# Signs with Developer ID and the hardened runtime, notarizes, staples, then zips with ditto
+# so the bundle's signature and extended attributes survive.
+dist-helper:
+	BUILD_DIR=build/dist HARDENED=1 SIGN_IDENTITY="$(DIST_IDENTITY)" \
+		helper/scripts/bundle.sh
+	codesign --verify --strict --deep "$(DIST_APP)"
+ifeq ($(NOTARIZE),1)
+	ditto -c -k --keepParent "$(DIST_APP)" helper/build/dist/notarize.zip
+	xcrun notarytool submit helper/build/dist/notarize.zip --keychain-profile "$(NOTARY_PROFILE)" --wait
+	xcrun stapler staple "$(DIST_APP)"
+	spctl --assess --type execute "$(DIST_APP)"
+endif
+	ditto -c -k --keepParent "$(DIST_APP)" "$(DIST)/WoW-Bars-Helper-$(VERSION).zip"

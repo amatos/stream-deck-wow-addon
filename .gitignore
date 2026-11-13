@@ -11,6 +11,9 @@ node_modules/
 dist/
 coverage/
 
+# Addon release staging
+addon/build/
+
 # Lua tests
 luacov.*.out
 
@@ -21,9 +24,13 @@ luacov.*.out
 helper/build/
 
 # Stream Deck plugin build output
+plugin/build/
 plugin/cc.matos.streamdeck.wowbars.sdPlugin/bin/
 plugin/cc.matos.streamdeck.wowbars.sdPlugin/logs/
 plugin/cc.matos.streamdeck.wowbars.sdPlugin/ui/inspector.js
 
 # SwiftPM / Xcode workspace state
 helper/.swiftpm/
+
+# direnv
+.direnv/

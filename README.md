@@ -5,7 +5,8 @@ Mirrors World of Warcraft action bars 1–5 on an Elgato Stream Deck (macOS only
 WoW addons cannot talk to other programs, so data moves through the screen and the keyboard:
 
 ```
- World of Warcraft                       WoW Bars Helper (macOS app)             Stream Deck app
+                                         WoW Bars Helper (macOS app)
+ World of Warcraft                    (windows app coming eventually)             Stream Deck app
 ┌──────────────────────┐   screen      ┌────────────────────────────┐  WebSocket  ┌─────────────────┐
 │ StreamDeckBars addon │──capture────▶ │ decode strip → render keys │───────────▶ │ WoW Bars plugin │
 │ draws a pixel strip  │               │ ws://127.0.0.1:47811       │             │ (one key / slot)│
@@ -13,70 +14,88 @@ WoW addons cannot talk to other programs, so data moves through the screen and t
 └──────────────────────┘               └────────────────────────────┘             └─────────────────┘
 ```
 
-1. The **addon** reads bars 1–5 every frame and encodes their state into a tiny grid of coloured pixels (the *strip*) in the corner of the WoW window. It also binds each button to a fixed key combination on the numeric keypad.
+1. The **addon** reads bars 1–5 every frame and encodes their state into a tiny grid of coloured pixels (the _strip_) in the corner of the WoW window. It also binds each button to a fixed key combination on the numeric keypad.
 2. The **helper** captures the WoW window with ScreenCaptureKit, finds and decodes the strip, extracts the button icons from the local WoW install, and draws a 144 × 144 image for each key.
 3. The **plugin** shows those images on Stream Deck keys. When a key is pressed it tells the helper, and the helper posts that button's keybind directly to the WoW process.
 
 ## Repository layout
 
-| Path | What it is |
-|---|---|
-| [`addon/StreamDeckBars/`](addon/StreamDeckBars) | The WoW addon (Lua). |
-| [`addon/spec/`](addon/spec) | Addon unit tests (busted), with a WoW API mock in `wowmock.lua`. |
-| [`helper/`](helper) | The macOS helper app (Swift package, macOS 15+). |
-| [`helper/scripts/bundle.sh`](helper/scripts/bundle.sh) | Builds and signs `WoW Bars Helper.app`. |
-| [`helper/Vendor/CascLib/`](helper/Vendor/CascLib) | Vendored [CascLib](https://github.com/ladislav-zezula/CascLib) (MIT) for reading WoW's game files. See `VERSION` for the commit. |
-| [`plugin/`](plugin) | The Stream Deck plugin (TypeScript, Stream Deck SDK v3). |
-| [`plugin/cc.matos.streamdeck.wowbars.sdPlugin/`](plugin/cc.matos.streamdeck.wowbars.sdPlugin) | The plugin bundle the Stream Deck app loads: manifest, images, property inspector, and built code in `bin/`. |
-| [`docs/strip-format.md`](docs/strip-format.md) | Spec of the on-screen strip and the keybinds. It's the source of truth for both the addon and the helper. |
-| [`docs/deck-protocol.md`](docs/deck-protocol.md) | Spec of the helper ↔ plugin WebSocket protocol. |
-| [`tools/`](tools) | Scripts that generate the icons, test fixtures and Stream Deck profiles. |
-| [`Makefile`](Makefile) | Entry point for building, testing and installing everything. |
-| [`WoWBarsHelper.xcodeproj`](WoWBarsHelper.xcodeproj) | Xcode wrapper that builds the helper app through `make` (see [Xcode](#building-from-xcode)). |
+| Path                                                                                          | What it is                                                                                                                       |
+| --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| [`addon/StreamDeckBars/`](addon/StreamDeckBars)                                               | The WoW addon (Lua).                                                                                                             |
+| [`addon/spec/`](addon/spec)                                                                   | Addon unit tests (busted), with a WoW API mock in `wowmock.lua`.                                                                 |
+| [`helper/`](helper)                                                                           | The macOS helper app (Swift package, macOS 15+).                                                                                 |
+| [`helper/scripts/bundle.sh`](helper/scripts/bundle.sh)                                        | Builds and signs `WoW Bars Helper.app`.                                                                                          |
+| [`helper/Vendor/CascLib/`](helper/Vendor/CascLib)                                             | Vendored [CascLib](https://github.com/ladislav-zezula/CascLib) (MIT) for reading WoW's game files. See `VERSION` for the commit. |
+| [`plugin/`](plugin)                                                                           | The Stream Deck plugin (TypeScript, Stream Deck SDK v3).                                                                         |
+| [`plugin/cc.matos.streamdeck.wowbars.sdPlugin/`](plugin/cc.matos.streamdeck.wowbars.sdPlugin) | The plugin bundle the Stream Deck app loads: manifest, images, property inspector, and built code in `bin/`.                     |
+| [`docs/strip-format.md`](docs/strip-format.md)                                                | Spec of the on-screen strip and the keybinds. It's the source of truth for both the addon and the helper.                        |
+| [`docs/deck-protocol.md`](docs/deck-protocol.md)                                              | Spec of the helper ↔ plugin WebSocket protocol.                                                                                  |
+| [`tools/`](tools)                                                                             | Scripts that generate the icons, test fixtures and Stream Deck profiles.                                                         |
+| [`Makefile`](Makefile)                                                                        | Entry point for building, testing and installing everything.                                                                     |
+| [`WoWBarsHelper.xcodeproj`](WoWBarsHelper.xcodeproj)                                          | Xcode wrapper that builds the helper app through `make` (see [Xcode](#building-from-xcode)).                                     |
 
 ### Addon — `addon/StreamDeckBars/`
 
-| File | Role |
-|---|---|
-| `StreamDeckBars.toc` | Addon manifest. Settings are saved in `StreamDeckBarsDB`. |
-| `Encoding.lua` | Pure encoding of the strip format: symbols, slot records, checksum. Uses no WoW API, and `tools/lua-fixture.lua` reuses it. |
-| `Layout.lua` | Maps bars 1–5 to button frames for Blizzard's bars and for Bartender4. |
-| `State.lua` | Reads action-bar state from the WoW API, coping with "secret" values that WoW hides during combat. |
-| `Bindings.lua` | Applies the override keybinds. |
-| `Strip.lua` | Draws the pixel-exact data grid and the count digits. |
-| `Core.lua` | Events, the redraw loop (at most 20/s, plus a 1 s heartbeat) and the `/sdb` slash command. |
+| File                 | Role                                                                                                                        |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `StreamDeckBars.toc` | Addon manifest. Settings are saved in `StreamDeckBarsDB`.                                                                   |
+| `Encoding.lua`       | Pure encoding of the strip format: symbols, slot records, checksum. Uses no WoW API, and `tools/lua-fixture.lua` reuses it. |
+| `Layout.lua`         | Maps bars 1–5 to button frames for Blizzard's bars and for Bartender4.                                                      |
+| `State.lua`          | Reads action-bar state from the WoW API, coping with "secret" values that WoW hides during combat.                          |
+| `Bindings.lua`       | Applies the override keybinds.                                                                                              |
+| `Strip.lua`          | Draws the pixel-exact data grid and the count digits.                                                                       |
+| `Core.lua`           | Events, the redraw loop (at most 20/s, plus a 1 s heartbeat) and the `/sdb` slash command.                                  |
 
 ### Helper — `helper/Sources/`
 
-| Module | Role |
-|---|---|
-| `StripKit` | Locates, samples and decodes the strip, reads count digits, and maps slots to keys. Uses no AppKit. |
-| `CascBridge` | CascLib plus a small C bridge for opening the WoW install's storage. |
-| `IconKit` | Finds the WoW install, reads icon files by FileDataID, decodes BLP textures, and caches them as PNGs. |
-| `DeckKit` | Renders Stream Deck key images and the plugin protocol messages. |
+| Module          | Role                                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `StripKit`      | Locates, samples and decodes the strip, reads count digits, and maps slots to keys. Uses no AppKit.                      |
+| `CascBridge`    | CascLib plus a small C bridge for opening the WoW install's storage.                                                     |
+| `IconKit`       | Finds the WoW install, reads icon files by FileDataID, decodes BLP textures, and caches them as PNGs.                    |
+| `DeckKit`       | Renders Stream Deck key images and the plugin protocol messages.                                                         |
 | `WoWBarsHelper` | The app: window capture, WebSocket server, key sending, and the settings window. It can sit in the Dock or the menu bar. |
 
 Extracted icons are cached in `~/Library/Caches/cc.matos.streamdeck.wowbars.helper/icons/`, with one folder per client version.
 
 ### Plugin — `plugin/src/`
 
-| File | Role |
-|---|---|
-| `plugin.ts` | Entry point: registers the action and connects to the helper. |
-| `helper-client.ts` | WebSocket client. Reconnects every 2 s while the helper is unavailable. |
-| `protocol.ts` | Message parsing and serialisation. |
-| `actions/slot.ts`, `slot-controller.ts` | The **WoW Slot** action. Each key mirrors one bar/button. |
-| `slots.ts` | Converts bar/button settings to strip slots. |
-| `inspector.ts`, `inspector-entry.ts` | The property inspector (choose a bar and button), bundled into `ui/inspector.js`. |
+| File                                    | Role                                                                              |
+| --------------------------------------- | --------------------------------------------------------------------------------- |
+| `plugin.ts`                             | Entry point: registers the action and connects to the helper.                     |
+| `helper-client.ts`                      | WebSocket client. Reconnects every 2 s while the helper is unavailable.           |
+| `protocol.ts`                           | Message parsing and serialisation.                                                |
+| `actions/slot.ts`, `slot-controller.ts` | The **WoW Slot** action. Each key mirrors one bar/button.                         |
+| `slots.ts`                              | Converts bar/button settings to strip slots.                                      |
+| `inspector.ts`, `inspector-entry.ts`    | The property inspector (choose a bar and button), bundled into `ui/inspector.js`. |
 
 ## Prerequisites
 
-| For | Needs |
-|---|---|
-| Helper | macOS 15+, Xcode / Swift 6 toolchain, and a code-signing identity in your keychain (see [Signing](#signing-the-helper)). |
-| Plugin | Node.js 24 and npm. Stream Deck app 7.1+. |
-| Addon tests | LuaJIT and LuaRocks (`brew install luajit luarocks`). |
-| Running it | World of Warcraft with render scale at 100%. The strip uses 1 px blocks and must be captured 1:1. |
+| For         | Needs                                                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Helper      | macOS 15+, Xcode / Swift 6 toolchain, and a code-signing identity in your keychain (see [Signing](#signing-the-helper)). |
+| Plugin      | Node.js 24 and npm. Stream Deck app 7.1+.                                                                                |
+| Addon tests | LuaJIT with busted and luacov.                                                                                           |
+| Running it  | World of Warcraft with render scale at 100%. The strip uses 1 px blocks and must be captured 1:1.                        |
+
+The Nix flake provides Node.js 24, LuaJIT with busted and luacov, and Python. Enter it with `nix develop`, or run `direnv allow` once to load it automatically. Xcode isn't provided by the flake: the shell uses the system Xcode for `swift`, `xcrun` and `codesign`.
+
+> [!NOTE]
+> **Without Nix**, install Xcode from the App Store, then the rest with Homebrew and LuaRocks:
+>
+> ```bash
+> brew install node@24 luajit luarocks python
+> luarocks --lua-version 5.1 --local install busted LUA_INCDIR="$(brew --prefix luajit)/include/luajit-2.1"
+> luarocks --lua-version 5.1 --local install luacov
+> ```
+>
+> `node@24` is keg-only, and `make addon-test` expects `busted` and `luacov` on your `PATH`, so add this to your shell profile:
+>
+> ```bash
+> export PATH="$(brew --prefix node@24)/bin:$PATH"
+> eval "$(luarocks --lua-version 5.1 --local path)"
+> ```
 
 ## Building the artifacts
 
@@ -175,11 +194,11 @@ python3 -I tools/fill-profile.py ~/Library/Application\ Support/com.elgato.Strea
 
 These files are committed. You only need to regenerate them after changing the script that produces them.
 
-| Asset | Command |
-|---|---|
-| Helper app icon `helper/Resources/AppIcon.icns` | See the two commands below. |
-| Plugin images `plugin/…sdPlugin/imgs/*.png` | `swift tools/plugin-images.swift plugin/cc.matos.streamdeck.wowbars.sdPlugin/imgs` |
-| Cross-language test fixture `helper/Tests/StripKitTests/Fixtures/lua-frame.json` | `make fixtures` (needs `luajit`). Rerun it whenever `Encoding.lua` changes. |
+| Asset                                                                            | Command                                                                            |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Helper app icon `helper/Resources/AppIcon.icns`                                  | See the two commands below.                                                        |
+| Plugin images `plugin/…sdPlugin/imgs/*.png`                                      | `swift tools/plugin-images.swift plugin/cc.matos.streamdeck.wowbars.sdPlugin/imgs` |
+| Cross-language test fixture `helper/Tests/StripKitTests/Fixtures/lua-frame.json` | `make fixtures` (needs `luajit`). Rerun it whenever `Encoding.lua` changes.        |
 
 To regenerate the app icon, draw the iconset and then convert it:
 
@@ -191,15 +210,29 @@ swift tools/app-icon.swift /tmp/AppIcon.iconset
 iconutil -c icns /tmp/AppIcon.iconset -o helper/Resources/AppIcon.icns
 ```
 
-## Testing
+## Packaging a release
 
-To install busted and luacov into `./.luarocks` (once):
+`make dist` builds all three artifacts into `dist/`:
+
+| File                                                     | Contents                                                                                           |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `StreamDeckBars-<version>.zip`                           | The addon folder. Unzip into `Interface/AddOns`.                                                   |
+| `cc.matos.streamdeck.wowbars-<version>.streamDeckPlugin` | The plugin. Double-click to install it in the Stream Deck app.                                     |
+| `WoW-Bars-Helper-<version>.zip`                          | The helper app, signed with Developer ID, notarized and stapled so Gatekeeper opens it on any Mac. |
+
+The version lives in the top-level `VERSION` file. To change it, run `make set-version V=x.y.z`: it updates `VERSION`, `## Version` in `StreamDeckBars.toc`, and the plugin manifest's `Version` (`x.y.z.0`). The helper reads `VERSION` when it's built. `make dist` stops if the `.toc` or the manifest doesn't match `VERSION`. The helper is built into `helper/build/dist/`, so it doesn't replace your development build.
+
+Notarization needs App Store Connect credentials stored in your keychain once:
 
 ```bash
-make addon-deps
+xcrun notarytool store-credentials wowbars-notary
 ```
 
-To run the addon tests with a coverage summary:
+`DIST_IDENTITY` (default `Developer ID Application`) and `NOTARY_PROFILE` (default `wowbars-notary`) override the signing identity and the keychain profile. To check the packaging without notarizing, run `make dist NOTARIZE=0`.
+
+## Testing
+
+To run the addon tests with a coverage summary (inside the Nix shell):
 
 ```bash
 make addon-test
@@ -223,14 +256,14 @@ make plugin-test
 
 The addon draws the strip at the top-left of the WoW window and binds the keys on login. Use `/sdb` to control it:
 
-| Command | Effect |
-|---|---|
-| `/sdb` or `/sdb status` | Shows the layout, strip position, keybind state and sequence number. |
-| `/sdb pos <x> <y>` | Moves the strip, in pixels from the window's top-left. |
-| `/sdb show`, `/sdb hide` | Shows or hides the strip. |
-| `/sdb bind` | Reapplies the keybinds. Changes made in combat are applied when combat ends. |
-| `/sdb keys` | Lists every bar/button keybind. |
-| `/sdb layout auto\|blizzard\|bartender` | Chooses which bar addon to read. Supports Blizzard's bars and Bartender4. |
+| Command                                 | Effect                                                                       |
+| --------------------------------------- | ---------------------------------------------------------------------------- |
+| `/sdb` or `/sdb status`                 | Shows the layout, strip position, keybind state and sequence number.         |
+| `/sdb pos <x> <y>`                      | Moves the strip, in pixels from the window's top-left.                       |
+| `/sdb show`, `/sdb hide`                | Shows or hides the strip.                                                    |
+| `/sdb bind`                             | Reapplies the keybinds. Changes made in combat are applied when combat ends. |
+| `/sdb keys`                             | Lists every bar/button keybind.                                              |
+| `/sdb layout auto\|blizzard\|bartender` | Chooses which bar addon to read. Supports Blizzard's bars and Bartender4.    |
 
 Bars use keypad keys 1–9, 0, `/` and `*`, with Ctrl+Shift for bar 1, Ctrl for bar 2, Shift for bar 3, no modifier for bar 4 and Command for bar 5. Alt is never used because it's WoW's self-cast modifier. The full table is in [docs/strip-format.md §9](docs/strip-format.md#9-keybinds).
 
