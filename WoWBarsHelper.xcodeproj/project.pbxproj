@@ -1,0 +1,122 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXFileReference section */
+		A1B2C3D40000000000000011 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		A1B2C3D40000000000000012 /* bundle.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = helper/scripts/bundle.sh; sourceTree = "<group>"; };
+		A1B2C3D40000000000000013 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = helper/Package.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		A1B2C3D40000000000000010 = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D40000000000000011 /* Makefile */,
+				A1B2C3D40000000000000012 /* bundle.sh */,
+				A1B2C3D40000000000000013 /* Package.swift */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXLegacyTarget section */
+		A1B2C3D40000000000000020 /* WoW Bars Helper */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "helper-app SIGN_IDENTITY=\"$(SIGN_IDENTITY)\"";
+			buildConfigurationList = A1B2C3D40000000000000040 /* Build configuration list for PBXLegacyTarget "WoW Bars Helper" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = "$(PROJECT_DIR)";
+			dependencies = (
+			);
+			name = "WoW Bars Helper";
+			passBuildSettingsInEnvironment = 0;
+			productName = "WoW Bars Helper";
+		};
+/* End PBXLegacyTarget section */
+
+/* Begin PBXProject section */
+		A1B2C3D40000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2720;
+			};
+			buildConfigurationList = A1B2C3D40000000000000030 /* Build configuration list for PBXProject "WoWBarsHelper" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1B2C3D40000000000000010;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1B2C3D40000000000000020 /* WoW Bars Helper */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		A1B2C3D40000000000000031 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A1B2C3D40000000000000032 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		A1B2C3D40000000000000041 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SIGN_IDENTITY = "Apple Development: Alberth Matos (9X3H5J6MYQ)";
+			};
+			name = Debug;
+		};
+		A1B2C3D40000000000000042 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				SIGN_IDENTITY = "Developer ID Application: Alberth Matos (Y89D5SQC6D)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1B2C3D40000000000000030 /* Build configuration list for PBXProject "WoWBarsHelper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D40000000000000031 /* Debug */,
+				A1B2C3D40000000000000032 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1B2C3D40000000000000040 /* Build configuration list for PBXLegacyTarget "WoW Bars Helper" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B2C3D40000000000000041 /* Debug */,
+				A1B2C3D40000000000000042 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1B2C3D40000000000000001 /* Project object */;
+}

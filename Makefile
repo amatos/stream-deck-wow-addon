@@ -31,7 +31,8 @@ helper-test:
 		-ignore-filename-regex '(Tests|WoWBarsHelper|Vendor|\.build)/'
 
 # A stable identity keeps macOS permissions across rebuilds. Override with
-# `make helper-app SIGN_IDENTITY=-` for ad-hoc signing.
+# `make helper-app SIGN_IDENTITY=-` for ad-hoc signing. WoWBarsHelper.xcodeproj
+# runs `make helper-app` with SIGN_IDENTITY from its Debug/Release build settings.
 SIGN_IDENTITY ?= Apple Development: Alberth Matos (9X3H5J6MYQ)
 
 helper-app:
